@@ -1,0 +1,44 @@
+{
+  "name": "com.lazy.advanced-scene-manager",
+  "version": "2.5.0",
+  "displayName": "Advanced Scene Manager",
+  "description": "The Ultimate Unity Scene Manager!\n\nStreamline your Unity scene management and unlock new possibilities with Advanced Scene Manager. This actively supported asset is continuously updated to provide you with the best experience, saving you valuable time and simplifying your workflows. \n\nA good workflow is important for healthy development. We offer a complete, organized, easy-to-use, and time-saving scene management system to assist you in every need.",
+  "unity": "2021.3",
+  "documentationUrl": "https://github.com/Lazy-Solutions/AdvancedSceneManager/tree/2.0/",
+  "changelogUrl": "https://github.com/Lazy-Solutions/AdvancedSceneManager/releases/latest",
+  "keywords": [],
+  "author": {
+    "name": "Lazy Solutions",
+    "email": "",
+    "url": "https://github.com/Lazy-Solutions/AdvancedSceneManager"
+  },
+  "_upm": {
+    "changelog": "2.5.0\n\nCallbacks:\\r\n- Scene operation callbacks has been rewritten. Scene.Open().WithCallback() has been replaced with the new event callback system.\\r\n\\t- Global callbacks: SceneManager.runtime.RegisterCallback<SceneOpenEvent>(..);\\r\n\\t- Operation specific callbacks: Scene.Open().RegisterCallback<LoadingScreenOpenEvent>(..);\\r\n\\tSee documentation for more information.\\r\n\\r\nScene Handling:\\r\n- Improved scene loader detection and error handling in various contexts.\\r\n- Added `Scene.Open().CloseAll(bool loadingScene = true, bool splashScreen = true, bool persistent = true, IEnumerable<Scene> except = null)`.\\r\n- Added `SceneCollection.Reopen()`.\\r\n\\r\nAppearance and Settings:\\r\n- Added toggles and offsets for hierarchy indicators in appearance settings and scene context menus.\\r\n"
+  },
+  "samples": [
+    {
+      "displayName": "Level Select",
+      "description": "Setup a simple level select menu.",
+      "path": "Samples~/Level Select"
+    },
+    {
+      "displayName": "Preloading",
+      "description": "Setup preloading.",
+      "path": "Samples~/Preloading"
+    },
+    {
+      "displayName": "Scene Streaming",
+      "description": "Setup a scene streaming level.",
+      "path": "Samples~/Scene Streaming"
+    },
+    {
+      "displayName": "Netcode",
+      "description": "Setup integration with netcode for gameobjects.",
+      "path": "Samples~/Netcode"
+    }
+  ],
+  "hideInEditor": false,
+  "dependencies": {
+    "com.unity.editorcoroutines": "1.0.0"
+  }
+}

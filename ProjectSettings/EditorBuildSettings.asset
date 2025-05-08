@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Packages/com.lazy.advanced-scene-manager/Plugin/Assets/ASM - Fallback scene.unity
+    guid: 8e855e5b4282732468a517da6bb95020
+  - enabled: 1
+    path: Assets/Scenes/Persistent.unity
+    guid: 3a6b9a2327cf68e428adcf5c2b08ff7f
+  - enabled: 1
+    path: Assets/Scenes/Main Menu.unity
+    guid: ffbaf3677d5dca242936dbe711103178
+  - enabled: 1
+    path: Assets/Scenes/Character Select.unity
+    guid: a11e2ae09d79a9c4aa09c32b9917d4f6
+  - enabled: 1
+    path: Assets/Scenes/Gameplay.unity
+    guid: 04fff0e465caf474b8e9f13ed6387222
+  - enabled: 1
+    path: Assets/Scenes/Level01 World.unity
+    guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/Level01 Logic.unity
+    guid: 535a15b4a9b0a8348829a77c1cc9672c
+  - enabled: 1
+    path: Assets/Scenes/EndLevel.unity
+    guid: f1edb89db7d03b24fa57585faae4af52
+  - enabled: 1
+    path: Packages/com.lazy.advanced-scene-manager/Default scenes/Pause/Pause.unity
+    guid: 226e5a6f57e81cc4e81e2d464fe798b3
+  - enabled: 1
+    path: Packages/com.lazy.advanced-scene-manager/Default scenes/InGameToolbar/InGameToolbar.unity
+    guid: f7a5075cf01fb72449b4bd0b944f86a5
+  - enabled: 1
+    path: Packages/com.lazy.advanced-scene-manager/Default scenes/Fade/Fade.unity
+    guid: cbffd398304640d4ab3cb4e7f79b7bdf
+  - enabled: 1
+    path: Packages/com.lazy.advanced-scene-manager/Default scenes/IconBounce/IconBounce.unity
+    guid: 76635b856d46593498d486a865203344
+  - enabled: 1
+    path: Packages/com.lazy.advanced-scene-manager/Default scenes/PressAnyKey/PressAnyKey.unity
+    guid: 0ad62d312b15063489bd01a22c89b0e8
+  - enabled: 1
+    path: Packages/com.lazy.advanced-scene-manager/Default scenes/ProgressBar/ProgressBar.unity
+    guid: 3810c2d0fb51ffb4b945d605f10782a5
+  - enabled: 1
+    path: Packages/com.lazy.advanced-scene-manager/Default scenes/Quote/Quote.unity
+    guid: a60bdb19550b79e4780c5e21533b274f
+  - enabled: 1
+    path: Packages/com.lazy.advanced-scene-manager/Default scenes/Splash ASM/Splash
+      ASM.unity
+    guid: d8ac8f99a18230449b778006fc9a8795
+  - enabled: 1
+    path: Packages/com.lazy.advanced-scene-manager/Default scenes/Splash Fade/Splash
+      Fade.unity
+    guid: 0d1c68e78977ca4468fac62172a4b14e
+  - enabled: 1
+    path: Packages/com.lazy.advanced-scene-manager/Default scenes/TotalProgressBar/TotalProgressBar.unity
+    guid: 97ad617393205f847b0f62e4d735bfc9
+  - enabled: 1
+    path: Packages/com.lazy.advanced-scene-manager/Default scenes/Splash/Splash.unity
+    guid: 796e4062ce7aa37429be971a51753f8c
+  m_configObjects:
+    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: d911e8fe6708e4d4c8a350134da88d60, type: 3}
+  m_UseUCBPForAssetBundles: 0

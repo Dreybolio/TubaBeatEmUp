@@ -1,0 +1,274 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-5714290082095230509
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bd3886436e609044aafef03c8894287, type: 3}
+  m_Name: Game - Level 01
+  m_EditorClassIdentifier: 
+  m_id: f6xiy2mb.s8t
+  m_title: Level 01
+  m_description: 
+  m_scenes:
+  - {fileID: 11400000, guid: 82135f51447f5424785684a32322266b, type: 2}
+  - {fileID: 11400000, guid: e9f820b2f51a3c24f8ab5502521ae2bc, type: 2}
+  - {fileID: 11400000, guid: ca89587cd758da642975cb70930c65b0, type: 2}
+  m_prefix: 'Game - '
+  m_loadingScreenUsage: 1
+  m_loadingScreen: {fileID: 0}
+  m_activeScene: {fileID: 11400000, guid: e9f820b2f51a3c24f8ab5502521ae2bc, type: 2}
+  m_setActiveSceneWhenOpenedAsAdditive: 0
+  m_unloadUnusedAssets: 1
+  m_openAsPersistent: 0
+  m_extraData: {fileID: 0}
+  m_startupOption: 2
+  m_loadPriority: -2
+  m_isIncluded: 1
+  m_isLocked: 0
+  m_lockMessage: 
+  m_scenesThatShouldNotAutomaticallyOpen: []
+  m_inputBindingsOld:
+    m_buttons: []
+    m_interactionType: 0
+    m_openCollectionAsAdditive: 0
+  m_inputBindings: []
+  m_events:
+    OnOpen:
+      m_PersistentCalls:
+        m_Calls: []
+    OnClose:
+      m_PersistentCalls:
+        m_Calls: []
+--- !u!114 &-4486944763772059799
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bd3886436e609044aafef03c8894287, type: 3}
+  m_Name: Game - End Level
+  m_EditorClassIdentifier: 
+  m_id: hynl33h0.udw
+  m_title: End Level
+  m_description: 
+  m_scenes:
+  - {fileID: 11400000, guid: be74d99443ee4d2478db91b045728c15, type: 2}
+  m_prefix: 'Game - '
+  m_loadingScreenUsage: 1
+  m_loadingScreen: {fileID: 0}
+  m_activeScene: {fileID: 0}
+  m_setActiveSceneWhenOpenedAsAdditive: 0
+  m_unloadUnusedAssets: 1
+  m_openAsPersistent: 0
+  m_extraData: {fileID: 0}
+  m_startupOption: 2
+  m_loadPriority: -2
+  m_isIncluded: 1
+  m_isLocked: 0
+  m_lockMessage: 
+  m_scenesThatShouldNotAutomaticallyOpen: []
+  m_inputBindingsOld:
+    m_buttons: []
+    m_interactionType: 0
+    m_openCollectionAsAdditive: 0
+  m_inputBindings: []
+  m_events:
+    OnOpen:
+      m_PersistentCalls:
+        m_Calls: []
+    OnClose:
+      m_PersistentCalls:
+        m_Calls: []
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed0f1fcb14f10114ca58b525ad780b5b, type: 3}
+  m_Name: Game
+  m_EditorClassIdentifier: 
+  m_id: 51ni7q2f.zmx
+  m_loadingScene: {fileID: 11400000, guid: a6d3d5a736e108f4cace9930d6b4cd2b, type: 2}
+  m_splashScene: {fileID: 0}
+  m_startupScene: {fileID: 0}
+  m_unloadUnusedAssetsForStandalone: 1
+  m_collections:
+  - {fileID: 6545889355861297989}
+  - {fileID: 8951464172342344723}
+  - {fileID: 4371391199947672128}
+  - {fileID: -5714290082095230509}
+  - {fileID: -4486944763772059799}
+  m_dynamicCollections:
+  - m_id: JlnGIykzVUyYaGQCuL1GGQ
+    m_path: Packages/com.lazy.advanced-scene-manager/Default scenes
+    m_title: ASM Defaults
+    m_description: 'These are scenes that ASM provides out-of-the-box as a convenience,
+      these are listed here to make sure they are included in build by default.
+
+
+      If
+      you aren''t using any of these, you may remove this dynamic collection.'
+    m_cachedPaths:
+    - Packages/com.lazy.advanced-scene-manager/Default scenes/Fade/Fade.unity
+    - Packages/com.lazy.advanced-scene-manager/Default scenes/IconBounce/IconBounce.unity
+    - Packages/com.lazy.advanced-scene-manager/Default scenes/InGameToolbar/InGameToolbar.unity
+    - Packages/com.lazy.advanced-scene-manager/Default scenes/Pause/Pause.unity
+    - Packages/com.lazy.advanced-scene-manager/Default scenes/PressAnyKey/PressAnyKey.unity
+    - Packages/com.lazy.advanced-scene-manager/Default scenes/ProgressBar/ProgressBar.unity
+    - Packages/com.lazy.advanced-scene-manager/Default scenes/Quote/Quote.unity
+    - Packages/com.lazy.advanced-scene-manager/Default scenes/Splash/Splash.unity
+    - Packages/com.lazy.advanced-scene-manager/Default scenes/Splash ASM/Splash ASM.unity
+    - Packages/com.lazy.advanced-scene-manager/Default scenes/Splash Fade/Splash
+      Fade.unity
+    - Packages/com.lazy.advanced-scene-manager/Default scenes/TotalProgressBar/TotalProgressBar.unity
+  m_standaloneDynamicCollection:
+    m_id: kknW+MyiJUGd8ZneQSC0Kg
+    m_scenes:
+    - {fileID: 11400000, guid: f079e2f3357f08e4090733008284fea5, type: 2}
+    - {fileID: 11400000, guid: b2103fc68aa76264f9fecd6322d5fabe, type: 2}
+    m_sceneBindingsOld:
+      m_throw: 1
+      m_keys: []
+      m_values: []
+--- !u!114 &4371391199947672128
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bd3886436e609044aafef03c8894287, type: 3}
+  m_Name: Game - Character Select
+  m_EditorClassIdentifier: 
+  m_id: s4118pv8.rnq
+  m_title: Character Select
+  m_description: 
+  m_scenes:
+  - {fileID: 11400000, guid: 6e64a291e631ed541be1f4ed56a7e720, type: 2}
+  m_prefix: 'Game - '
+  m_loadingScreenUsage: 1
+  m_loadingScreen: {fileID: 0}
+  m_activeScene: {fileID: 0}
+  m_setActiveSceneWhenOpenedAsAdditive: 0
+  m_unloadUnusedAssets: 1
+  m_openAsPersistent: 0
+  m_extraData: {fileID: 0}
+  m_startupOption: 2
+  m_loadPriority: -2
+  m_isIncluded: 1
+  m_isLocked: 0
+  m_lockMessage: 
+  m_scenesThatShouldNotAutomaticallyOpen: []
+  m_inputBindingsOld:
+    m_buttons: []
+    m_interactionType: 0
+    m_openCollectionAsAdditive: 0
+  m_inputBindings: []
+  m_events:
+    OnOpen:
+      m_PersistentCalls:
+        m_Calls: []
+    OnClose:
+      m_PersistentCalls:
+        m_Calls: []
+--- !u!114 &6545889355861297989
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bd3886436e609044aafef03c8894287, type: 3}
+  m_Name: Game - Persistent
+  m_EditorClassIdentifier: 
+  m_id: 4m118ob5.9qe
+  m_title: Persistent
+  m_description: 
+  m_scenes:
+  - {fileID: 11400000, guid: a95ebcd93a7d02c4eaafae00580eb592, type: 2}
+  m_prefix: 'Game - '
+  m_loadingScreenUsage: 1
+  m_loadingScreen: {fileID: 0}
+  m_activeScene: {fileID: 0}
+  m_setActiveSceneWhenOpenedAsAdditive: 0
+  m_unloadUnusedAssets: 0
+  m_openAsPersistent: 1
+  m_extraData: {fileID: 0}
+  m_startupOption: 1
+  m_loadPriority: -2
+  m_isIncluded: 1
+  m_isLocked: 0
+  m_lockMessage: 
+  m_scenesThatShouldNotAutomaticallyOpen: []
+  m_inputBindingsOld:
+    m_buttons: []
+    m_interactionType: 0
+    m_openCollectionAsAdditive: 0
+  m_inputBindings: []
+  m_events:
+    OnOpen:
+      m_PersistentCalls:
+        m_Calls: []
+    OnClose:
+      m_PersistentCalls:
+        m_Calls: []
+--- !u!114 &8951464172342344723
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bd3886436e609044aafef03c8894287, type: 3}
+  m_Name: Game - Main menu
+  m_EditorClassIdentifier: 
+  m_id: t2cp93df.8xz
+  m_title: Main menu
+  m_description: 
+  m_scenes:
+  - {fileID: 11400000, guid: 88f79acd3e15e804baf7036ed9a5aa12, type: 2}
+  m_prefix: 'Game - '
+  m_loadingScreenUsage: 1
+  m_loadingScreen: {fileID: 0}
+  m_activeScene: {fileID: 11400000, guid: 88f79acd3e15e804baf7036ed9a5aa12, type: 2}
+  m_setActiveSceneWhenOpenedAsAdditive: 0
+  m_unloadUnusedAssets: 1
+  m_openAsPersistent: 0
+  m_extraData: {fileID: 0}
+  m_startupOption: 1
+  m_loadPriority: -2
+  m_isIncluded: 1
+  m_isLocked: 0
+  m_lockMessage: 
+  m_scenesThatShouldNotAutomaticallyOpen: []
+  m_inputBindingsOld:
+    m_buttons: []
+    m_interactionType: 0
+    m_openCollectionAsAdditive: 0
+  m_inputBindings: []
+  m_events:
+    OnOpen:
+      m_PersistentCalls:
+        m_Calls: []
+    OnClose:
+      m_PersistentCalls:
+        m_Calls: []
