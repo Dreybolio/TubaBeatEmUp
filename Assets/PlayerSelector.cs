@@ -8,12 +8,17 @@ public class PlayerSelector : MonoBehaviour
 {
     [Header("Pointers")]
     [SerializeField] private Image statusImage;
+    [SerializeField] private Image arrowLeftImage;
+    [SerializeField] private Image arrowRightImage;
     [SerializeField] private TextMeshProUGUI textPlayerName;
     [SerializeField] private TextMeshProUGUI textCharacterName;
     [SerializeField] private TextMeshProUGUI textCharacterClass;
     [SerializeField] private TextMeshProUGUI textCharacterLevel;
     [SerializeField] private TextMeshProUGUI textPressToJoin;
+    [SerializeField] private RectTransform modelParent;
 
+    [Header("Pointers - External")]
+    [SerializeField] private PlayerSelectorManager psManager;
 
     [Header("Sprites")]
     [SerializeField] private Sprite sprStatusReady;
@@ -21,7 +26,22 @@ public class PlayerSelector : MonoBehaviour
 
     private Coroutine flickerTextRoutine;
     public Player Player { get; private set; }
+    public CharacterData CurrentSelected { get; private set; }
+    private CharacterModel _displayModel;
 
+    // Events
+    public delegate void SelectorEvent();
+    public event SelectorEvent OnStatusChanged;
+
+    public void OnDisable()
+    {
+        if (Player != null)
+        {
+            Player.OnUINavigate -= OnNavigate;
+            Player.OnUIConfirm -= OnConfirm;
+            Player.OnUICancel -= OnCancel;
+        }
+    }
     public void ConnectPlayer(Player player)
     {
         // Enable UI Elements
@@ -30,6 +50,8 @@ public class PlayerSelector : MonoBehaviour
         textCharacterClass.enabled = true;
         textCharacterLevel.enabled = true;
         statusImage.enabled = true;
+        arrowLeftImage.enabled = true;
+        arrowRightImage.enabled = true;
 
         // Set text fields
         textPlayerName.text = player.name;
@@ -37,8 +59,13 @@ public class PlayerSelector : MonoBehaviour
         if (flickerTextRoutine != null)
         {
             StopCoroutine(flickerTextRoutine);
+            textPressToJoin.enabled = false;
         }
         Player = player;
+
+        // Navigation and Confirming enabled
+        Player.OnUINavigate += OnNavigate;
+        Player.OnUIConfirm += OnConfirm;
     }
 
     public void AwaitConnection()
@@ -49,6 +76,8 @@ public class PlayerSelector : MonoBehaviour
         textCharacterClass.enabled = false;
         textCharacterLevel.enabled = false;
         statusImage.enabled = false;
+        arrowLeftImage.enabled = false;
+        arrowRightImage.enabled = false;
 
         // Start the press to join flashing
         if (flickerTextRoutine == null)
@@ -57,25 +86,62 @@ public class PlayerSelector : MonoBehaviour
         }
         Player = null;
     }
-
-    public void OnNavigateLeft()
+    public void OnNavigate(Vector2 vec)
     {
-
+        if (vec.x > 0.5f)
+        {
+            CharacterData next = psManager.GetNextCharacter(CurrentSelected);
+            SetAsSelected(next);
+        }
+        else if (vec.x < 0.5f)
+        {
+            CharacterData prev = psManager.GetPreviousCharacter(CurrentSelected);
+            SetAsSelected(prev);
+        }
     }
 
-    public void OnNavigateRight()
+    public void SetAsSelected(CharacterData cd)
     {
+        if (_displayModel != null)
+        {
+            Destroy(_displayModel.gameObject);
+        }
+        _displayModel = Instantiate(cd.modelPrefab, modelParent);
+        textCharacterName.text = cd.name;
+        textCharacterClass.text = cd.description;
+        textCharacterLevel.text = GameData.Instance.GetCharacterSaveData(cd).level.ToString();
 
+        CurrentSelected = cd; 
     }
 
     public void OnConfirm()
     {
+        Player.CharacterData = CurrentSelected;
+        statusImage.sprite = sprStatusReady;
+        arrowLeftImage.enabled = false;
+        arrowRightImage.enabled = false;
 
+        // Disable navigation, enable cancelling
+        Player.OnUINavigate -= OnNavigate;
+        Player.OnUIConfirm -= OnConfirm;
+        Player.OnUICancel += OnCancel;
+
+        OnStatusChanged?.Invoke();
     }
 
     public void OnCancel()
     {
+        Player.CharacterData = null;
+        statusImage.sprite = sprStatusNotReady;
+        arrowLeftImage.enabled = true;
+        arrowRightImage.enabled = true;
 
+        // Enable navigation, enable confirming
+        Player.OnUINavigate += OnNavigate;
+        Player.OnUIConfirm += OnConfirm;
+        Player.OnUICancel -= OnCancel;
+
+        OnStatusChanged?.Invoke();
     }
 
     private IEnumerator C_FlickerText(TextMeshProUGUI text, float interval)

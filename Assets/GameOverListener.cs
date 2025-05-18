@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
+using static UnityEngine.GraphicsBuffer;
 
 public class GameOverListener : Singleton<GameOverListener>
 {
@@ -7,15 +8,6 @@ public class GameOverListener : Singleton<GameOverListener>
     public UnityEvent OnGameOver;
     private int _numCharacters;
     private int _numDeaths = 0;
-
-    private void Start()
-    {
-        _numCharacters = charactersListenForDeath.Length;
-        foreach (var c in charactersListenForDeath)
-        {
-            c.OnDeath += IncrementDeaths;
-        }
-    }
 
     private void IncrementDeaths()
     {
@@ -26,5 +18,13 @@ public class GameOverListener : Singleton<GameOverListener>
             OnGameOver?.Invoke();
         }
     }
-
+    public void SearchForTargets()
+    {
+        charactersListenForDeath = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        _numCharacters = charactersListenForDeath.Length;
+        foreach (var c in charactersListenForDeath)
+        {
+            c.OnDeath += IncrementDeaths;
+        }
+    }
 }

@@ -2,6 +2,7 @@ using AdvancedSceneManager;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
+using System;
 
 public class PlayerManager : Singleton<PlayerManager>
 {
@@ -10,7 +11,7 @@ public class PlayerManager : Singleton<PlayerManager>
     public event PlayerJoinEvent OnPlayerLeft;
 
     PlayerInputManager inputManager;
-    private List<Player> players = new();
+    [NonSerialized] public List<Player> Players = new();
     private void Awake()
     {
         inputManager = GetComponent<PlayerInputManager>();
@@ -18,10 +19,11 @@ public class PlayerManager : Singleton<PlayerManager>
 
     public void PlayerJoin(PlayerInput playerInput)
     {
+        if (Players.Count > 4) return;
         Player player = playerInput.GetComponent<Player>();
-        player.gameObject.name = $"Player {players.Count}";
+        player.gameObject.name = $"Player {Players.Count}";
         Debug.Log($"Player {player.gameObject.name} with settings {playerInput.user} has joined the game.");
-        players.Add(player);
+        Players.Add(player);
         OnPlayerJoin?.Invoke(player);
     }
 
@@ -29,12 +31,13 @@ public class PlayerManager : Singleton<PlayerManager>
     {
         Player player = playerInput.GetComponent<Player>();
         Debug.Log($"Player {player.gameObject.name} with settings {playerInput.user} has left the game.");
-        players.Remove(player);
+        Players.Remove(player);
         OnPlayerLeft?.Invoke(player);
     }
+
     public void SetAllPlayersActionMap(string map)
     {
-        foreach (var player in players)
+        foreach (var player in Players)
         {
             player.SetActionMap(map);
         }

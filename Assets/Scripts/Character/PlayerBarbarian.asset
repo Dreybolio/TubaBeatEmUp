@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fe665dcd6c44d0469d47c9cfff0c516, type: 3}
+  m_Name: PlayerBarbarian
+  m_EditorClassIdentifier: 
+  name: Pipefury
+  description: Bagpipe Barbarian
+  spawnablePrefab: {fileID: 4107868876215196947, guid: dafb25ab04dbb7f46b111f165788c7ff, type: 3}
+  modelPrefab: {fileID: 1795148701609255359, guid: 5f596943359f9d9419d89d7fe5ba2de6, type: 3}

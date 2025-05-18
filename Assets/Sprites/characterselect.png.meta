@@ -110,7 +110,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: characterselect_0
+      name: characterselect_sheet
       rect:
         serializedVersion: 2
         x: 0
@@ -118,7 +118,7 @@ TextureImporter:
         width: 512
         height: 1024
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -132,7 +132,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: characterselect_1
+      name: characterselect_notready
       rect:
         serializedVersion: 2
         x: 529
@@ -140,7 +140,7 @@ TextureImporter:
         width: 136
         height: 137
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -154,7 +154,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: characterselect_2
+      name: characterselect_ready
       rect:
         serializedVersion: 2
         x: 677
@@ -162,7 +162,7 @@ TextureImporter:
         width: 137
         height: 137
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -176,7 +176,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: characterselect_3
+      name: characterselect_arrow
       rect:
         serializedVersion: 2
         x: 542
@@ -184,7 +184,7 @@ TextureImporter:
         width: 90
         height: 252
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -211,10 +211,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      characterselect_0: -90659969
-      characterselect_1: -257681254
-      characterselect_2: -59170025
-      characterselect_3: 408213370
+      characterselect_arrow: 408213370
+      characterselect_notready: -257681254
+      characterselect_ready: -59170025
+      characterselect_sheet: -90659969
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

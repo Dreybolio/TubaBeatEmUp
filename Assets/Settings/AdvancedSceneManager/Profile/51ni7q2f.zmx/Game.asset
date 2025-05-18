@@ -16,9 +16,9 @@ MonoBehaviour:
   m_title: Level 01
   m_description: 
   m_scenes:
-  - {fileID: 11400000, guid: 82135f51447f5424785684a32322266b, type: 2}
   - {fileID: 11400000, guid: e9f820b2f51a3c24f8ab5502521ae2bc, type: 2}
   - {fileID: 11400000, guid: ca89587cd758da642975cb70930c65b0, type: 2}
+  - {fileID: 11400000, guid: 82135f51447f5424785684a32322266b, type: 2}
   m_prefix: 'Game - '
   m_loadingScreenUsage: 1
   m_loadingScreen: {fileID: 0}

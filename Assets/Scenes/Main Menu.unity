@@ -502,10 +502,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
@@ -657,7 +657,7 @@ MonoBehaviour:
         m_MethodName: _Open
         m_Mode: 2
         m_Arguments:
-          m_ObjectArgument: {fileID: -5714290082095230509, guid: c1f6f20ee9545974bb4b96f6e887de57, type: 2}
+          m_ObjectArgument: {fileID: 4371391199947672128, guid: c1f6f20ee9545974bb4b96f6e887de57, type: 2}
           m_ObjectArgumentAssemblyTypeName: AdvancedSceneManager.Models.SceneCollection,
             AdvancedSceneManager
           m_IntArgument: 0

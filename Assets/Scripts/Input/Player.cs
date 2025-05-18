@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -5,8 +6,18 @@ public class Player : MonoBehaviour {
     public delegate void PlayerActionEvent(ActionType type);
     public event PlayerActionEvent OnPlayerAction;
 
+    public delegate void UINavigateEvent(Vector2 vec);
+    public delegate void UIEvent();
+    public event UINavigateEvent OnUINavigate;
+    public event UIEvent OnUIConfirm;
+    public event UIEvent OnUICancel;
+
     private PlayerInput input;
 
+    // Assigned Data at runtime
+    [NonSerialized] public CharacterData CharacterData;
+    
+    // Variables
     private Vector2 _moveInput = Vector2.zero;
     private bool _jumpInput = false;
     private bool _jumpCancelled = false;
@@ -31,31 +42,45 @@ public class Player : MonoBehaviour {
     }
 
     /*
+     *  Player Spawning
+     */
+    public PlayerController SpawnPhysicalPlayer()
+    {
+        if (CharacterData != null)
+        {
+            PlayerController controller = Instantiate((PlayerController)CharacterData.spawnablePrefab);
+            controller.AssignPlayer(this);
+            return controller;
+        }
+        return null;
+    }
+
+    /*
      *  PLAYER ACTIONS
      */
-    public void OnMovement(InputAction.CallbackContext ctx)
+    public void Movement(InputAction.CallbackContext ctx)
     {
         _moveInput = ctx.ReadValue<Vector2>();
     }
-    public void OnJump(InputAction.CallbackContext ctx)
+    public void Jump(InputAction.CallbackContext ctx)
     {
         if (ctx.started) _jumpInput = true;
         if (ctx.canceled) _jumpCancelled = true;
         print($"Input: {_jumpInput}, Cancelled: {_jumpCancelled}");
     }
-    public void OnLightAttack(InputAction.CallbackContext ctx)
+    public void LightAttack(InputAction.CallbackContext ctx)
     {
         if (ctx.performed) OnPlayerAction?.Invoke(ActionType.ATTACK_LIGHT);
     }
-    public void OnHeavyAttack(InputAction.CallbackContext ctx)
+    public void HeavyAttack(InputAction.CallbackContext ctx)
     {
         if (ctx.performed) OnPlayerAction?.Invoke(ActionType.ATTACK_HEAVY);
     }
-    public void OnSpecial(InputAction.CallbackContext ctx)
+    public void Special(InputAction.CallbackContext ctx)
     {
         if (ctx.performed) OnPlayerAction?.Invoke(ActionType.SPECIAL);
     }
-    public void OnDash(InputAction.CallbackContext ctx)
+    public void Dash(InputAction.CallbackContext ctx)
     {
         if (ctx.performed) OnPlayerAction?.Invoke(ActionType.DASH);
     }
@@ -81,17 +106,20 @@ public class Player : MonoBehaviour {
     /*
     *  UI ACTIONS
     */
-    public void OnNavigate(InputAction.CallbackContext ctx)
+    public void UINavigate(InputAction.CallbackContext ctx)
     {
-        Vector2 navigate = ctx.ReadValue<Vector2>();
-        print($"Navigating {navigate}");
+        if (ctx.performed)
+        {
+            Vector2 navigate = ctx.ReadValue<Vector2>();
+            OnUINavigate?.Invoke(navigate);
+        }
     }
-    public void OnConfirm(InputAction.CallbackContext ctx)
+    public void UIConfirm(InputAction.CallbackContext ctx)
     {
-        print("Confirming");
+        if (ctx.performed) OnUIConfirm?.Invoke();
     }
-    public void OnCancel(InputAction.CallbackContext ctx)
+    public void UICancel(InputAction.CallbackContext ctx)
     {
-        print("Cancelling");
+        if (ctx.performed) OnUICancel?.Invoke();
     }
 }

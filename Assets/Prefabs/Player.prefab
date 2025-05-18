@@ -73,8 +73,8 @@ MonoBehaviour:
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 383433592993163139}
-        m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
-        m_MethodName: OnMovement
+        m_TargetAssemblyTypeName: Player, Assembly-CSharp
+        m_MethodName: Movement
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -89,8 +89,8 @@ MonoBehaviour:
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 383433592993163139}
-        m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
-        m_MethodName: OnLightAttack
+        m_TargetAssemblyTypeName: Player, Assembly-CSharp
+        m_MethodName: LightAttack
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -105,8 +105,8 @@ MonoBehaviour:
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 383433592993163139}
-        m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
-        m_MethodName: OnHeavyAttack
+        m_TargetAssemblyTypeName: Player, Assembly-CSharp
+        m_MethodName: HeavyAttack
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -121,8 +121,8 @@ MonoBehaviour:
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 383433592993163139}
-        m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
-        m_MethodName: OnSpecial
+        m_TargetAssemblyTypeName: Player, Assembly-CSharp
+        m_MethodName: Special
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -137,8 +137,8 @@ MonoBehaviour:
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 383433592993163139}
-        m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
-        m_MethodName: OnJump
+        m_TargetAssemblyTypeName: Player, Assembly-CSharp
+        m_MethodName: Jump
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -153,8 +153,8 @@ MonoBehaviour:
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 383433592993163139}
-        m_TargetAssemblyTypeName: InputManager, Assembly-CSharp
-        m_MethodName: OnDash
+        m_TargetAssemblyTypeName: Player, Assembly-CSharp
+        m_MethodName: Dash
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -170,7 +170,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 383433592993163139}
         m_TargetAssemblyTypeName: Player, Assembly-CSharp
-        m_MethodName: OnNavigate
+        m_MethodName: UINavigate
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -186,7 +186,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 383433592993163139}
         m_TargetAssemblyTypeName: Player, Assembly-CSharp
-        m_MethodName: OnConfirm
+        m_MethodName: UIConfirm
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -202,7 +202,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 383433592993163139}
         m_TargetAssemblyTypeName: Player, Assembly-CSharp
-        m_MethodName: OnCancel
+        m_MethodName: UICancel
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -214,36 +214,8 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: c8f9aa07-bfa4-48f7-a4d9-1ef2b58e1131
     m_ActionName: 'UI/Cancel[/Keyboard/escape]'
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 86016589-0d33-4c7d-87d6-6e30db4686a3
-    m_ActionName: 'UI/Point[/Mouse/position]'
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 779106f2-512e-4168-9e0f-72a8b843ad16
-    m_ActionName: 'UI/Click[/Mouse/leftButton]'
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: c422ded1-ff8d-4df4-a4a9-3d03938d0f61
-    m_ActionName: 'UI/RightClick[/Mouse/rightButton]'
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: d383b768-28ee-49a4-8073-60b4d472a518
-    m_ActionName: 'UI/MiddleClick[/Mouse/middleButton]'
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: f7756204-0da1-4b7e-a7e7-6f54325f0e96
-    m_ActionName: 'UI/ScrollWheel[/Mouse/scroll]'
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 93feb5ae-2673-43e8-93c2-b802a3428b19
-    m_ActionName: UI/TrackedDevicePosition
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: bbbbd811-33bb-4b98-929c-ce4e26db6309
-    m_ActionName: UI/TrackedDeviceOrientation
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
-  m_DefaultActionMap: Player
+  m_DefaultActionMap: Gameplay
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}

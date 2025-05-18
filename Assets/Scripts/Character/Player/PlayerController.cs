@@ -72,12 +72,14 @@ public abstract class PlayerController : Character
         GameUI.Instance.AddPlayerUI(this);
         CharacterInit();
     }
+    public void AssignPlayer(Player player)
+    {
+        Player = player;
+        Player.OnPlayerAction += DoAction;
+    }
+
     private void OnEnable()
     {
-        if (Player != null)
-        {
-            Player.OnPlayerAction += DoAction;
-        }
         model.AnimListener.OnLightHitFrame += LightAttackHitFrame;    // Event01: Light Action Hit Frame
         model.AnimListener.OnHeavyHitFrame += HeavyAttackHitFrame;    // Event02: Heavy Action Hit Frame
         model.AnimListener.OnActionAnimOver += ActionAnimFinished;     // Event03: Action animation over (any)
@@ -105,11 +107,11 @@ public abstract class PlayerController : Character
     {
         GroundedCheck();
         JumpAndGravity(Player.GetPlayerJump());
-        if (Player.GetPlayerJumpReleased())
+        if (Player != null && Player.GetPlayerJumpReleased())
         {
             InterruptJump();
         }
-        Vector2 moveVec = Player.GetPlayerMovement().normalized;
+        Vector2 moveVec = Player != null ? Player.GetPlayerMovement().normalized : Vector2.zero;
         Move(moveVec, speed);
         if (_hasControl)
             TurnFaceMoveDir();
