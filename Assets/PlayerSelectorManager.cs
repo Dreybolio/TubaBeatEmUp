@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Rendering;
 
 public class PlayerSelectorManager : MonoBehaviour
 {
@@ -29,7 +30,7 @@ public class PlayerSelectorManager : MonoBehaviour
         for (int i = 0; i < playerSelectors.Length; i++)
         {
             playerSelectors[i].AwaitConnection();
-            playerSelectors[i].OnStatusChanged += TryStartGame;
+            playerSelectors[i].OnStatusChanged += OnSelectorStatusChanged;
         }
         foreach(var cha in GameData.Instance.GetUnlockedCharacters())
         {
@@ -62,40 +63,61 @@ public class PlayerSelectorManager : MonoBehaviour
         }
     }
 
-    private void TryStartGame()
+    private void OnSelectorStatusChanged(PlayerSelector selector, bool ready)
     {
-        foreach (var player in PlayerManager.Instance.Players)
+        if (ready)
         {
-            // Check if each player has an assigned character
-            if (player.CharacterData == null)
-                return;
+            // If any other selectors are hovering this character, then forcefully move them off this character
+            for (int i = 0; i < playerSelectors.Length; i++)
+            {
+                if (playerSelectors[i] != selector)
+                {
+                    // For each selector that DIDN'T trigger this event
+                    if (playerSelectors[i].CurrentSelected == selector.CurrentSelected)
+                    {
+                        // This is the same as the current selected, force it onto the next character
+                        playerSelectors[i].SetAsSelected(GetNextCharacter(selector.CurrentSelected));
+                    }
+                }
+            }
+
+            // Try to start the game
+            foreach (var player in PlayerManager.Instance.Players)
+            {
+                // Check if each player has an assigned character
+                if (player.CharacterData == null)
+                    return;
+            }
+            // All selected, move to game
+            OnStartGame?.Invoke();
         }
-        // All selected, move to game
-        OnStartGame?.Invoke();
     }
 
     public CharacterData GetNextCharacter(CharacterData character)
     {
         LinkedListNode<CharacterData> node = unlockedCharacters.Find(character).Next;
+        if (node == null) node = unlockedCharacters.First;
         // If this character has already been selected by another, skip this
-        Player[] alreadySelected = PlayerManager.Instance.Players.Where(c => c.CharacterData == character).ToArray();
+        Player[] alreadySelected = PlayerManager.Instance.Players.Where(c => c.CharacterData == node.Value).ToArray();
         if (alreadySelected.Length > 0)
         {
             // There already exists this character selected, skip this
-            return GetNextCharacter(alreadySelected[0].CharacterData);
+            Debug.Log($"Character {alreadySelected[0].CharacterData.name} has already been selected!");
+            return GetNextCharacter(node.Value);
         }
-        return node != null ? node.Value : unlockedCharacters.First.Value;
+        return node.Value;
     }
     public CharacterData GetPreviousCharacter(CharacterData character)
     {
         LinkedListNode<CharacterData> node = unlockedCharacters.Find(character).Previous;
+        if (node == null) node = unlockedCharacters.Last;
         // If this character has already been selected by another, skip this
-        Player[] alreadySelected = PlayerManager.Instance.Players.Where(c => c.CharacterData == character).ToArray();
+        Player[] alreadySelected = PlayerManager.Instance.Players.Where(c => c.CharacterData == node.Value).ToArray();
         if (alreadySelected.Length > 0)
         {
             // There already exists this character selected, skip this
-            return GetPreviousCharacter(alreadySelected[0].CharacterData);
+            return GetPreviousCharacter(node.Value);
         }
-        return node != null ? node.Value : unlockedCharacters.Last.Value;
+        return node.Value;
     }
 }

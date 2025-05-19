@@ -30,7 +30,7 @@ public class PlayerSelector : MonoBehaviour
     private CharacterModel _displayModel;
 
     // Events
-    public delegate void SelectorEvent();
+    public delegate void SelectorEvent(PlayerSelector selector, bool ready);
     public event SelectorEvent OnStatusChanged;
 
     public void OnDisable()
@@ -102,6 +102,9 @@ public class PlayerSelector : MonoBehaviour
 
     public void SetAsSelected(CharacterData cd)
     {
+        // Don't change selected if changing to what we already are.
+        if (cd == CurrentSelected) return;
+
         if (_displayModel != null)
         {
             Destroy(_displayModel.gameObject);
@@ -126,7 +129,7 @@ public class PlayerSelector : MonoBehaviour
         Player.OnUIConfirm -= OnConfirm;
         Player.OnUICancel += OnCancel;
 
-        OnStatusChanged?.Invoke();
+        OnStatusChanged?.Invoke(this, true);
     }
 
     public void OnCancel()
@@ -141,7 +144,7 @@ public class PlayerSelector : MonoBehaviour
         Player.OnUIConfirm += OnConfirm;
         Player.OnUICancel -= OnCancel;
 
-        OnStatusChanged?.Invoke();
+        OnStatusChanged?.Invoke(this, false);
     }
 
     private IEnumerator C_FlickerText(TextMeshProUGUI text, float interval)

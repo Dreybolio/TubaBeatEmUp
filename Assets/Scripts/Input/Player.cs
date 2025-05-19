@@ -21,6 +21,7 @@ public class Player : MonoBehaviour {
     private Vector2 _moveInput = Vector2.zero;
     private bool _jumpInput = false;
     private bool _jumpCancelled = false;
+    private bool _uiNavigateCancel = true;
 
     private void Awake()
     {
@@ -108,10 +109,16 @@ public class Player : MonoBehaviour {
     */
     public void UINavigate(InputAction.CallbackContext ctx)
     {
-        if (ctx.performed)
+        if (ctx.performed && _uiNavigateCancel)
         {
             Vector2 navigate = ctx.ReadValue<Vector2>();
+            print(navigate);
+            _uiNavigateCancel = false;
             OnUINavigate?.Invoke(navigate);
+        }
+        else if (ctx.canceled)
+        {
+            _uiNavigateCancel = true;
         }
     }
     public void UIConfirm(InputAction.CallbackContext ctx)
