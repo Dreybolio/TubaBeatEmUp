@@ -232,15 +232,17 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-  enemies:
+  dynamicScaleEnemies:
   - prefab: {fileID: 8747550365576440670, guid: 82241f5cd00ac97488d4506d8f01fdbe, type: 3}
     spawnPos: {fileID: 69224883}
   - prefab: {fileID: 8747550365576440670, guid: 82241f5cd00ac97488d4506d8f01fdbe, type: 3}
     spawnPos: {fileID: 1475659051}
+  dynamicHalfScaleEnemies:
   - prefab: {fileID: 8747550365576440670, guid: 82241f5cd00ac97488d4506d8f01fdbe, type: 3}
     spawnPos: {fileID: 731504806}
   - prefab: {fileID: 8747550365576440670, guid: 82241f5cd00ac97488d4506d8f01fdbe, type: 3}
     spawnPos: {fileID: 1846635544}
+  staticEnemies: []
   OnEncounterFinished:
     m_PersistentCalls:
       m_Calls:
@@ -740,7 +742,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1182184665
 Transform:
   m_ObjectHideFlags: 0
@@ -789,11 +791,13 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-  enemies:
+  dynamicScaleEnemies:
   - prefab: {fileID: 8747550365576440670, guid: 72908adfd3d7446449ba5671e4df7ec9, type: 3}
     spawnPos: {fileID: 486461804}
   - prefab: {fileID: 8747550365576440670, guid: 72908adfd3d7446449ba5671e4df7ec9, type: 3}
     spawnPos: {fileID: 497351164}
+  dynamicHalfScaleEnemies: []
+  staticEnemies: []
   OnEncounterFinished:
     m_PersistentCalls:
       m_Calls:

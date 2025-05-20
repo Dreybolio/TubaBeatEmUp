@@ -47,7 +47,7 @@ public class SquadManager : Singleton<SquadManager>
         int squadSize = squad.Count;
 
         // Determine the number of Offense roles based on squad size
-        int offenseCount = squadSize < 6 ? 1 : 2;
+        int offenseCount = squadSize < 6 ? 2 : 3;
         var offenseCandidates = squad.Where(c => c.SquadRole == AI_SquadRole.OFFENSE).ToList();
         if (offenseCandidates.Count > offenseCount)
         {

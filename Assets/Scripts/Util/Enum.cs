@@ -24,6 +24,11 @@ public enum AI_Action
     ROLL,
 }
 
+public enum AI_Action_Override
+{
+    CHANGEROLE_OFFENSE
+}
+
 public enum ActionType
 {
     NONE,
