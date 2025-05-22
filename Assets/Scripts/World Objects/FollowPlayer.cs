@@ -70,7 +70,6 @@ public class FollowPlayer : MonoBehaviour
 
             // Do FOV Adjusting
             Vector3 furthestPlayer = targets.OrderByDescending(t => Mathf.Abs(cam.WorldToViewportPoint(t.position).x)).FirstOrDefault().position;
-            print($"Furthest Player: {furthestPlayer}");
 
             // Find required FOV
             Vector3 localPos = cam.transform.InverseTransformPoint(furthestPlayer);
@@ -78,7 +77,6 @@ public class FollowPlayer : MonoBehaviour
             float requiredVertFOV = Mathf.Rad2Deg * 2f * Mathf.Atan(tanVertFOVHalf);
             // Add FOV Edge Distance so the camera starts widening a little before the player reaches the exact edge of the screen
             float targetFOV = Mathf.Clamp(requiredVertFOV + fovEdgeDistance, minAllowedFOV, maxAllowedFOV);
-            print($"Target FOV: {targetFOV}");
             // Lerp the FOV
             if (Mathf.Abs(cam.fieldOfView - targetFOV) > 0.1f)
             {
@@ -89,7 +87,6 @@ public class FollowPlayer : MonoBehaviour
             {
                 _fov = targetFOV;
             }
-            print($"Var FOV: {_fov}");
             // Apply FOV
             if (cam.fieldOfView != _fov)
             {
@@ -119,27 +116,27 @@ public class FollowPlayer : MonoBehaviour
         Vector3 c = new Vector3(b.x, transform.position.y + edgeCollidersHeight / 2f, b.z);
         Vector3 d = new Vector3(a.x, transform.position.y + edgeCollidersHeight / 2f, a.z);
 
-        Debug.DrawLine(a, b, Color.red, 0.1f);
-        Debug.DrawLine(b, c, Color.red, 0.1f);
-        Debug.DrawLine(c, d, Color.red, 0.1f);
-        Debug.DrawLine(d, a, Color.red, 0.1f);
-        Debug.DrawLine(a, c, Color.red, 0.1f);
-        Debug.DrawLine(d, b, Color.red, 0.1f);
+        //Debug.DrawLine(a, b, Color.red, 0.1f);
+        //Debug.DrawLine(b, c, Color.red, 0.1f);
+        //Debug.DrawLine(c, d, Color.red, 0.1f);
+        //Debug.DrawLine(d, a, Color.red, 0.1f);
+        //Debug.DrawLine(a, c, Color.red, 0.1f);
+        //Debug.DrawLine(d, b, Color.red, 0.1f);
 
         AlignBoxCollider(leftWall, a, b, c, d, 0.5f);
 
         // -- RIGHT WALL -- //
-        a = cam.ViewportToWorldPoint(new Vector3(1, 0, 1));     a.Set(a.x + 0.5f, -edgeCollidersHeight / 2f, a.z);
-        b = cam.ViewportToWorldPoint(new Vector3(1, 0, 10));     b.Set(b.x + 0.5f, -edgeCollidersHeight / 2f, b.z);
-        c = cam.ViewportToWorldPoint(new Vector3(1, 1, 10));    c.Set(c.x + 0.5f, edgeCollidersHeight / 2f, c.z);
-        d = cam.ViewportToWorldPoint(new Vector3(1, 1, 1));    d.Set(d.x + 0.5f, edgeCollidersHeight / 2f, d.z);
+        a = cam.ViewportToWorldPoint(new Vector3(1, nearYSample, nearZSample)); a.Set(a.x - xOffset, transform.position.y - edgeCollidersHeight / 2f, a.z);
+        b = cam.ViewportToWorldPoint(new Vector3(1, farYSample, farZSample)); b.Set(b.x - xOffset, transform.position.y - edgeCollidersHeight / 2f, b.z);
+        c = new Vector3(b.x, transform.position.y + edgeCollidersHeight / 2f, b.z);
+        d = new Vector3(a.x, transform.position.y + edgeCollidersHeight / 2f, a.z);
 
-        Debug.DrawLine(a, b, Color.red, 0.1f);
-        Debug.DrawLine(b, c, Color.red, 0.1f);
-        Debug.DrawLine(c, d, Color.red, 0.1f);
-        Debug.DrawLine(d, a, Color.red, 0.1f);
-        Debug.DrawLine(a, c, Color.red, 0.1f);
-        Debug.DrawLine(d, b, Color.red, 0.1f);
+        //Debug.DrawLine(a, b, Color.red, 0.1f);
+        //Debug.DrawLine(b, c, Color.red, 0.1f);
+        //Debug.DrawLine(c, d, Color.red, 0.1f);
+        //Debug.DrawLine(d, a, Color.red, 0.1f);
+        //Debug.DrawLine(a, c, Color.red, 0.1f);
+        //Debug.DrawLine(d, b, Color.red, 0.1f);
 
         AlignBoxCollider(rightWall, a, b, c, d, 0.5f);
     }

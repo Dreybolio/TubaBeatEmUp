@@ -182,6 +182,6 @@ public class PlayerClassBarbarian : PlayerController
     {
         _animSpecialRise_T = Animator.StringToHash("Override_A");
         _animSpecialSlam_T = Animator.StringToHash("Override_B");
-        _animSpecialRollOut_T = Animator.StringToHash("Override_C");
+        _animSpecialRollOut_T = Animator.StringToHash("Roll");
     }
 }

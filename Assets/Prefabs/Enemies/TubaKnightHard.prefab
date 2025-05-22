@@ -183,6 +183,22 @@ MonoBehaviour:
   stunImmunityResetTimer: 1
   stunsUntilImmunity: 8
   squadID: 0
+  comboDoubleLight:
+    enabled: 1
+    cooldown: 5
+    favourability: 1
+  comboTripleLight:
+    enabled: 1
+    cooldown: 5
+    favourability: 1
+  comboSpin:
+    enabled: 1
+    cooldown: 5
+    favourability: 1
+  comboDoubleHeavy:
+    enabled: 1
+    cooldown: 5
+    favourability: 1
 --- !u!143 &3212117365703793205
 CharacterController:
   m_ObjectHideFlags: 0

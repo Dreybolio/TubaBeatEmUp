@@ -471,7 +471,7 @@ GameObject:
   m_Component:
   - component: {fileID: 581140529}
   - component: {fileID: 581140528}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Right Camera Wall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -664,7 +664,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1262347549}
   - component: {fileID: 1262347550}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Left Camera Wall
   m_TagString: Untagged
   m_Icon: {fileID: 0}

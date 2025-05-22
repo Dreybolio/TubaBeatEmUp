@@ -1,6 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class EnemyController : Character
 {
@@ -22,9 +25,21 @@ public class EnemyController : Character
     [SerializeField] private int stunsUntilImmunity = 5;
     [SerializeField] private int squadID = 0;
 
+    [Header("Combos - Light")]
+    [SerializeField] private AttackCombo comboDoubleLight;
+    [SerializeField] private AttackCombo comboTripleLight;
+    [SerializeField] private AttackCombo comboSpin;
+    [Header("Combos - Heavy")]
+    [SerializeField] private AttackCombo comboDoubleHeavy;
+    private List<AttackCombo> combos;
+
+    // Events
+    protected event CharacterEvent OnActionFinished;
+
     // Vars
     private Vector2 _movementInput;
     private ActionType _currAction;
+    private AttackCombo _currCombo;
     private bool _attackHitFramePassed = false;
     private bool _actionAnimFinished = false;
     private int _stunCount = 0;
@@ -34,17 +49,20 @@ public class EnemyController : Character
     private int _animActionID_I, _animCancelAction_T;
     void Start()
     {
-        TryFindTarget();
+        AttackCombo[] comboArr = { comboDoubleLight, comboTripleLight, comboDoubleHeavy, comboSpin };
+        combos = comboArr.Where(c => c.enabled).ToList();
         AssignExtraAnimationIDs();
+        AssignComboData();
         CharacterInit();
         SquadManager.Instance.AddToSquad(this, squadID);
+        TryFindTarget();
         StartCoroutine(C_AILoop());
     }
 
     private void OnEnable()
     {
-        model.AnimListener.OnLightHitFrame += LightAttackHitboxCheck;     // Event01: Light Attack Hit Frame
-        model.AnimListener.OnHeavyHitFrame += HeavyAttackHitboxCheck;     // Event02: Heavy Attack Hit Frame
+        model.AnimListener.OnLightHitFrame += LightAttackHitFrame;     // Event01: Light Attack Hit Frame
+        model.AnimListener.OnHeavyHitFrame += HeavyAttackHitFrame;     // Event02: Heavy Attack Hit Frame
         model.AnimListener.OnActionAnimOver += ActionAnimFinished;         // Event03: Attack Over Event
 
         // Events with oneself
@@ -54,8 +72,8 @@ public class EnemyController : Character
     }
     private void OnDisable()
     {
-        model.AnimListener.OnLightHitFrame += LightAttackHitboxCheck;     // Event01: Light Attack Hit Frame
-        model.AnimListener.OnHeavyHitFrame += HeavyAttackHitboxCheck;     // Event02: Heavy Attack Hit Frame
+        model.AnimListener.OnLightHitFrame += LightAttackHitFrame;     // Event01: Light Attack Hit Frame
+        model.AnimListener.OnHeavyHitFrame += HeavyAttackHitFrame;     // Event02: Heavy Attack Hit Frame
         model.AnimListener.OnActionAnimOver -= ActionAnimFinished;         // Event03: Attack Over Event
 
         // Events with oneself
@@ -85,6 +103,11 @@ public class EnemyController : Character
             // it's been too long, reset all
             _stunCount = 0;
             _stunImmunity = false;
+        }
+        foreach (var combo in combos)
+        {
+            if (combo.timer > 0)
+                combo.timer -= Time.deltaTime;
         }
     }
 
@@ -132,19 +155,132 @@ public class EnemyController : Character
             _currAction = type;
             _attackHitFramePassed = false;
             _actionAnimFinished = false;
-            model.Animator.SetInteger(_animActionID_I, (int)type);        
+            model.Animator.SetInteger(_animActionID_I, (int)type);
         }
+    }
+    public void LightAttack()
+    {
+        model.Animator.SetInteger(_animActionID_I, (int)ActionType.ATTACK_LIGHT);
+    }
+
+    public void HeavyAttack()
+    {
+        model.Animator.SetInteger(_animActionID_I, (int)ActionType.ATTACK_HEAVY);
+        // Stop movement during a heavy attack
+        _hasMovement = false;
+        if (Grounded) _speed.Set(0, 0); // Stop speed if grounded
+        OnActionFinished += HeavyAttackEnd;
+    }
+    private void HeavyAttackEnd()
+    {
+        OnActionFinished -= HeavyAttackEnd;
+        _hasMovement = true;
+    }
+
+    public void SpinAttack()
+    {
+        // Because this action is not triggered normally, action type must be set here
+        _currAction = ActionType.ATTACK_SPIN;
+        model.Animator.SetInteger(_animActionID_I, (int)ActionType.ATTACK_SPIN);
+        _hasMovement = false;
+        _canBeHit = false;
+        // Do dash speeds as this happens
+        _speed = _facingRight ? new(speed, 0) : new(-speed, 0);
+        // Revert variables when done
+        OnActionFinished += SpinAttackEnd;
+    }
+
+    public void SpinAttackEnd()
+    {
+        // Stop listening for self
+        OnActionFinished -= SpinAttackEnd;
+        // Revert Variables
+        _speed = Vector2.zero;
+        _hasMovement = true;
+        _canBeHit = true;
     }
 
     public void ActionAnimFinished()
     {
-        // Animation awaiting used for enemy combo attacks
-        /*
-         *  TODO: Replace this with an effective enemy Combo System
-         */
-        model.Animator.SetInteger(_animActionID_I, (int)ActionType.NONE);
-        _currAction = ActionType.NONE;
+        // Any changed variables get reset
         _actionAnimFinished = true;
+        OnActionFinished?.Invoke();
+
+        if (_currCombo != null)
+        {
+            // Continue this active combo
+            if (!DoNextSequenceInCombo(_currCombo))
+            {
+                model.Animator.SetInteger(_animActionID_I, (int)ActionType.NONE);
+                _currCombo = null;
+                _currAction = ActionType.NONE;
+            }
+            return;
+        }
+
+        // Check for valid combos with the current action
+        List<AttackCombo> valid = combos.Where(c => c.prerequisite == _currAction && c.timer <= 0).ToList();
+        if (valid.Count == 1)
+        {
+            // Do the only valid combo
+            AttackCombo selected = valid[0];
+            _currCombo = selected;
+            if (!DoNextSequenceInCombo(selected))
+            {
+                model.Animator.SetInteger(_animActionID_I, (int)ActionType.NONE);
+                _currCombo = null;
+                _currAction = ActionType.NONE;
+            }
+            return;
+        }
+        else if (valid.Count > 1)
+        {
+            // Roll a favourability die to determine which combo executes
+            int sum = valid.Sum(c => c.favourability);
+            int rand = Random.Range(0, sum);
+            int cumulative = 0;
+            AttackCombo selected = valid.First(c =>
+            {
+                cumulative += c.favourability;
+                return rand < cumulative;
+            });
+            _currCombo = selected;
+            if (!DoNextSequenceInCombo(selected))
+            {
+                model.Animator.SetInteger(_animActionID_I, (int)ActionType.NONE);
+                _currCombo = null;
+                _currAction = ActionType.NONE;
+            }
+            return;
+        }
+        else
+        {
+            // No valid combos were selected do nothing now
+            model.Animator.SetInteger(_animActionID_I, (int)ActionType.NONE);
+            _currCombo = null;
+            _currAction = ActionType.NONE;
+        }
+    }
+
+    public bool DoNextSequenceInCombo(AttackCombo combo)
+    {
+        if (combo == null)
+        {
+            Debug.LogWarning("Tried to execute a null combo!");
+            return false;
+        }
+        if (combo.sequence >= combo.actions.Count)
+        {
+            // Combo is finished, stop doing it
+            combo.sequence = 0;
+            combo.timer = combo.cooldown;
+            return false;
+        }
+
+        // Do the next action
+        combo.actions[combo.sequence].Invoke();
+        combo.sequence++;
+        return true;
     }
 
     /*
@@ -154,6 +290,7 @@ public class EnemyController : Character
     {
         // Stop this attack from happening
         _currAction = ActionType.NONE;
+        _currCombo = null;
         model.Animator.SetInteger(_animActionID_I, (int)ActionType.NONE);
         // Panic cancel this animation
         model.Animator.SetTrigger(_animCancelAction_T);
@@ -162,7 +299,7 @@ public class EnemyController : Character
     /*
      *  Triggered by Animation System during light attack swing animation
      */
-    public void LightAttackHitboxCheck()
+    public void LightAttackHitFrame()
     {
         List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(lightAttackDistance);
         foreach (var c in hits)
@@ -184,7 +321,7 @@ public class EnemyController : Character
     /*
     *  Triggered by Animation System during light attack swing animation
     */
-    public void HeavyAttackHitboxCheck()
+    public void HeavyAttackHitFrame()
     {
         List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(heavyAttackDistance);
         foreach (var c in hits)
@@ -222,4 +359,36 @@ public class EnemyController : Character
         _animActionID_I = Animator.StringToHash("ActionID");
         _animCancelAction_T = Animator.StringToHash("CancelAction");
     }
+    public void AssignComboData()
+    {
+        // Light combos - Note, these always start with a light attack, so that first light attack isn't internally "part of" the combo
+        // Double Light
+        comboDoubleLight.actions.Add(LightAttack);
+        comboDoubleLight.prerequisite = ActionType.ATTACK_LIGHT;
+        // Triple Light
+        comboTripleLight.actions.Add(LightAttack);
+        comboTripleLight.actions.Add(LightAttack);
+        comboTripleLight.prerequisite = ActionType.ATTACK_LIGHT;
+        // Spin
+        comboSpin.actions.Add(SpinAttack);
+        comboSpin.prerequisite = ActionType.ATTACK_LIGHT;
+
+        // Heavy combos - These always start with a heavy attack
+        comboDoubleHeavy.actions.Add(HeavyAttack);
+        comboDoubleHeavy.prerequisite = ActionType.ATTACK_HEAVY;
+    }
+}
+
+// ** The reason this is a class and not a struct is that structs are pass-by-value, which is a memory problem.
+// ** Classes are pass-by-reference which is what we want
+[Serializable]
+public class AttackCombo
+{
+    public bool enabled = false;
+    public float cooldown = 5f;
+    public int favourability = 1;
+    [NonSerialized] public ActionType prerequisite = ActionType.NONE;
+    [NonSerialized] public float timer = 0;
+    [NonSerialized] public int sequence = 0;
+    [NonSerialized] public List<Action> actions = new();
 }

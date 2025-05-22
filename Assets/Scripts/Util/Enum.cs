@@ -36,7 +36,8 @@ public enum ActionType
     ATTACK_HEAVY,
     SPECIAL,
     DASH,
-    ATTACK_DRILL
+    ATTACK_DRILL,
+    ATTACK_SPIN,
 }
 
 public enum CharacterType
