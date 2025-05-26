@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
+[RequireComponent(typeof(AIBehaviours))]
 public class EnemyController : Character
 {
     [Header("Attacks")]
@@ -41,6 +42,7 @@ public class EnemyController : Character
     private ActionType _currAction;
     private AttackCombo _currCombo;
     private bool _attackHitFramePassed = false;
+    private bool _attacksAlwaysKnockback = false;
     private bool _actionAnimFinished = false;
     private int _stunCount = 0;
     private float _prevStunTime = 0;
@@ -54,7 +56,8 @@ public class EnemyController : Character
         AssignExtraAnimationIDs();
         AssignComboData();
         CharacterInit();
-        SquadManager.Instance.AddToSquad(this, squadID);
+        EnemyManager.Instance.Enemies.Add(this);
+        EnemyManager.Instance.AddToSquad(this, squadID);
         TryFindTarget();
         StartCoroutine(C_AILoop());
     }
@@ -68,7 +71,7 @@ public class EnemyController : Character
         // Events with oneself
         OnLoseControl += CancelAction;
         OnHurtStun += HurtStunCounter;
-        OnDeath += RemoveSelfFromSquad;
+        OnDeath += RemoveSelfEnemyManager;
     }
     private void OnDisable()
     {
@@ -79,7 +82,7 @@ public class EnemyController : Character
         // Events with oneself
         OnLoseControl -= CancelAction;
         OnHurtStun -= HurtStunCounter;
-        OnDeath -= RemoveSelfFromSquad;
+        OnDeath -= RemoveSelfEnemyManager;
     }
 
     private void Update()
@@ -211,9 +214,7 @@ public class EnemyController : Character
             // Continue this active combo
             if (!DoNextSequenceInCombo(_currCombo))
             {
-                model.Animator.SetInteger(_animActionID_I, (int)ActionType.NONE);
-                _currCombo = null;
-                _currAction = ActionType.NONE;
+                EndCombo();
             }
             return;
         }
@@ -227,9 +228,7 @@ public class EnemyController : Character
             _currCombo = selected;
             if (!DoNextSequenceInCombo(selected))
             {
-                model.Animator.SetInteger(_animActionID_I, (int)ActionType.NONE);
-                _currCombo = null;
-                _currAction = ActionType.NONE;
+                EndCombo();
             }
             return;
         }
@@ -247,18 +246,14 @@ public class EnemyController : Character
             _currCombo = selected;
             if (!DoNextSequenceInCombo(selected))
             {
-                model.Animator.SetInteger(_animActionID_I, (int)ActionType.NONE);
-                _currCombo = null;
-                _currAction = ActionType.NONE;
+                EndCombo();
             }
             return;
         }
         else
         {
             // No valid combos were selected do nothing now
-            model.Animator.SetInteger(_animActionID_I, (int)ActionType.NONE);
-            _currCombo = null;
-            _currAction = ActionType.NONE;
+            EndCombo();
         }
     }
 
@@ -277,10 +272,26 @@ public class EnemyController : Character
             return false;
         }
 
+        if (combo.sequence == combo.actions.Count - 1)
+        {
+            // This is the combo finisher, do special actions
+            _attacksAlwaysKnockback = combo.knockbackOnLastHit;
+        }
         // Do the next action
         combo.actions[combo.sequence].Invoke();
         combo.sequence++;
         return true;
+    }
+
+    private void EndCombo()
+    {
+        if (_currCombo != null && _currCombo.knockbackOnLastHit)
+        {
+            _attacksAlwaysKnockback = false;
+        }
+        model.Animator.SetInteger(_animActionID_I, (int)ActionType.NONE);
+        _currCombo = null;
+        _currAction = ActionType.NONE;
     }
 
     /*
@@ -305,7 +316,7 @@ public class EnemyController : Character
         foreach (var c in hits)
         {
             bool killedPlayer = c.Key.Character.Damage(lightAttackDamage, c.Value);
-            if (!c.Key.Character.Grounded)
+            if (!c.Key.Character.Grounded || _attacksAlwaysKnockback)
             {
                 c.Key.Character.Knockback(_facingRight, lightAttackAirborneKnockbackForce);
             }
@@ -327,7 +338,14 @@ public class EnemyController : Character
         foreach (var c in hits)
         {
             c.Key.Character.Damage(heavyAttackDamage, c.Value);
-            c.Key.Character.Knockback(_facingRight, c.Key.Character.Grounded ? heavyAttackKnockbackForce : heavyAttackAirborneKnockbackForce);
+            if (!c.Key.Character.Grounded || _attacksAlwaysKnockback)
+            {
+                c.Key.Character.Knockback(_facingRight, c.Key.Character.Grounded ? heavyAttackKnockbackForce : heavyAttackAirborneKnockbackForce);
+            }
+            else
+            {
+                c.Key.Character.HurtStun();
+            }
             Debug.Log("Character " + name + " has hit Character " + c.Key.Character.name + " for " + heavyAttackDamage + " damage.");
         }
         _attackHitFramePassed = true;
@@ -340,9 +358,10 @@ public class EnemyController : Character
         _stunImmunity = (_stunCount > stunsUntilImmunity);
     }
 
-    private void RemoveSelfFromSquad()
+    private void RemoveSelfEnemyManager()
     {
-        SquadManager.Instance.RemoveFromSquad(this, squadID);
+        EnemyManager.Instance.Enemies.Remove(this);
+        EnemyManager.Instance.RemoveFromSquad(this, squadID);
     }
 
     private void TryFindTarget()
@@ -351,7 +370,7 @@ public class EnemyController : Character
         if (player != null)
         {
             Target = player.transform;
-            aiBehaviour.target = Target;
+            aiBehaviour.Target = Target;
         }
     }
     public void AssignExtraAnimationIDs()
@@ -372,10 +391,12 @@ public class EnemyController : Character
         // Spin
         comboSpin.actions.Add(SpinAttack);
         comboSpin.prerequisite = ActionType.ATTACK_LIGHT;
+        comboSpin.knockbackOnLastHit = true;
 
         // Heavy combos - These always start with a heavy attack
         comboDoubleHeavy.actions.Add(HeavyAttack);
         comboDoubleHeavy.prerequisite = ActionType.ATTACK_HEAVY;
+        comboDoubleHeavy.knockbackOnLastHit = true;
     }
 }
 
@@ -391,4 +412,5 @@ public class AttackCombo
     [NonSerialized] public float timer = 0;
     [NonSerialized] public int sequence = 0;
     [NonSerialized] public List<Action> actions = new();
+    [NonSerialized] public bool knockbackOnLastHit;
 }

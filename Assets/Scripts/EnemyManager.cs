@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class SquadManager : Singleton<SquadManager>
+public class EnemyManager : Singleton<EnemyManager>
 {
-    
+    public List<Character> Enemies { get; private set; } = new();
     public Dictionary<int, List<Character>> Squads { get; private set; } = new();
-
     public void AddToSquad(Character c, int squadID)
     {
         if (!Squads.ContainsKey(squadID)) {

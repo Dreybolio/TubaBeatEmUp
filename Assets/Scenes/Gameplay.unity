@@ -621,7 +621,7 @@ GameObject:
   - component: {fileID: 1091172860}
   - component: {fileID: 1091172859}
   m_Layer: 0
-  m_Name: SquadManager
+  m_Name: Enemy Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
