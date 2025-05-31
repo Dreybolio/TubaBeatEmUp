@@ -21,7 +21,7 @@ public abstract class PlayerController : Character
     [Header("Actions - Dash")]
     [SerializeField] private float dashMagicCost = 30f;
     [SerializeField] private float dashMagicRegenCooldown = 0.75f;
-    [SerializeField] private float dashSpeed = 5.0f;
+    [SerializeField] protected float dashSpeed = 5.0f;
     [SerializeField] private float dashLength = 0.30f;
     [SerializeField] private float dashCooldown = 0.15f;
 
@@ -83,7 +83,6 @@ public abstract class PlayerController : Character
         model.AnimListener.OnLightHitFrame += LightAttackHitFrame;    // Event01: Light Action Hit Frame
         model.AnimListener.OnHeavyHitFrame += HeavyAttackHitFrame;    // Event02: Heavy Action Hit Frame
         model.AnimListener.OnActionAnimOver += ActionAnimFinished;     // Event03: Action animation over (any)
-        model.AnimListener.OnSpecialSnd += PlaySpecialSnd;
 
         // Establish events with oneself
         OnLoseControl += CancelAction;
@@ -97,7 +96,6 @@ public abstract class PlayerController : Character
         model.AnimListener.OnLightHitFrame -= LightAttackHitFrame;
         model.AnimListener.OnHeavyHitFrame -= HeavyAttackHitFrame;
         model.AnimListener.OnActionAnimOver -= ActionAnimFinished;
-        model.AnimListener.OnSpecialSnd -= PlaySpecialSnd;
 
         // Unsubscribe from events with oneself
         OnLoseControl -= CancelAction;
@@ -238,7 +236,9 @@ public abstract class PlayerController : Character
 
     // Override these by class-specific definitions
     public abstract void Special();
-
+    public abstract bool CanAffordSpecial();
+    public abstract void DashSpecial();
+    public abstract bool CanAffordDashSpecial();
 
     public void Dash()
     {
@@ -278,7 +278,20 @@ public abstract class PlayerController : Character
         float timer = 0f;
         while (timer < dashLength)
         {
-            if (actionOverride == ActionType.ATTACK_HEAVY)
+            if (actionOverride == ActionType.ATTACK_LIGHT)
+            {
+                // Override this dash into a spin
+                if (Player != null)
+                {
+                    Player.OnPlayerAction += DoAction;
+                    Player.OnPlayerAction -= OverrideAction;
+                }
+                _doMagicRegen = true;
+                PauseMagicRegenForTime(dashMagicRegenCooldown);
+                SpinAttack();
+                yield break;
+            }
+            else if (actionOverride == ActionType.ATTACK_HEAVY)
             {
                 // Note: Normal cost function happens in Drill function, but need to check here to make sure the dash should indeed be ended.
                 if (Magic < drillMagicCost)
@@ -295,6 +308,24 @@ public abstract class PlayerController : Character
                         Player.OnPlayerAction -= OverrideAction;
                     }
                     Drill();
+                    yield break;
+                }
+            }
+            else if (actionOverride == ActionType.SPECIAL)
+            {
+                if (!CanAffordDashSpecial())
+                {
+                    actionOverride = ActionType.NONE;
+                }
+                else
+                {
+                    // Override this dash into a Dash Special
+                    if (Player != null)
+                    {
+                        Player.OnPlayerAction += DoAction;
+                        Player.OnPlayerAction -= OverrideAction;
+                    }
+                    DashSpecial();
                     yield break;
                 }
             }
@@ -317,7 +348,32 @@ public abstract class PlayerController : Character
 
         ActionAnimFinished();
     }
+    #region Spin Attack
+    public void SpinAttack()
+    {
+        // Because this action is not triggered normally, action type must be set here
+        _currAction = ActionType.ATTACK_SPIN;
+        model.Animator.SetInteger(_animActionID_I, (int)ActionType.ATTACK_SPIN);
+        _hasMovement = false;
+        _canBeHit = false;
+        // Do dash speeds as this happens
+        _speed = _facingRight ? new(dashSpeed, 0) : new(-dashSpeed, 0);
+        // Revert variables when done
+        OnActionFinished += SpinAttackEnd;
+    }
 
+    public void SpinAttackEnd()
+    {
+        // Stop listening for self
+        OnActionFinished -= SpinAttackEnd;
+        // Revert Variables
+        _speed = Vector2.zero;
+        _hasMovement = true;
+        _canBeHit = true;
+    }
+    #endregion
+
+    #region Drill Attack
     public void Drill()
     {
         if (SpendMagicOnAction(drillMagicCost))
@@ -353,7 +409,7 @@ public abstract class PlayerController : Character
         _attacksAlwaysKnockback = false;
         PauseMagicRegenForTime(drillMagicRegenCooldown);
     }
-
+    #endregion
     /*
      *  Triggered by Animation System during light attack swing animation
      */
@@ -442,12 +498,6 @@ public abstract class PlayerController : Character
         if (Magic > MaxMagic) Magic = MaxMagic;
         OnMagicChanged?.Invoke();
     }
-
-    private void PlaySpecialSnd()
-    {
-        SoundManager.Instance.PlaySound(sndSpecial, 0.6f, true);
-    }
-
     
     public void AssignExtraAnimationIDs()
     {

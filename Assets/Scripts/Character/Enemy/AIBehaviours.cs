@@ -301,9 +301,16 @@ public class AIBehaviours : MonoBehaviour
             NavMesh.CalculatePath(transform.position, (_favourAltPath ? _targetPos : _targetPosAlt), NavMesh.AllAreas, _path);
         }
 
+        if (_path.corners.Length == 0)
+        {
+            Debug.LogWarning($"Enemy {name} Could not find valid path to target");
+            return;
+        }
         // If the chosen path's last point intersects with another enemy, then try to adjust it to avoid stacking.
 
+        print($"Corners: {_path.corners}");
         Vector3 last = _path.corners[^1];
+        print($"Last: {last}");
         Character closest = EnemyManager.Instance.Enemies.OrderBy(e => Vector3.Distance(e.transform.position, last)).FirstOrDefault();
         if (closest != null && Vector3.Distance(closest.transform.position, last) < _navAvoidEnemiesDistance)
         {

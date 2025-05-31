@@ -21,6 +21,14 @@ public class PlayerClassBarbarian : PlayerController
     [SerializeField] private float specialNormalAcceleration = 3f;
     [SerializeField] private float specialFastAcceleration = 30f;
     [SerializeField] private float specialCustomGravity = -10f;
+
+    [Header("Dash Special - Attack Stats")]
+    [SerializeField] private float dashSpecialMagicCost = 60.0f;
+    [SerializeField] private float dashSpecialMagicRegenCooldown = 0.75f;
+    [SerializeField] private float dashSpecialDistance = 2.0f;
+    [SerializeField] private int dashSpecialDamage = 3;
+    [SerializeField] private float dashSpecialKnockbackForce = 3.0f;
+
     [Header("Particles")]
     [SerializeField] private ParticleObject particleCircleSlashPrefab;
 
@@ -29,12 +37,14 @@ public class PlayerClassBarbarian : PlayerController
     private float _specialTargetSpeed;
 
     // Anim
-    protected int _animSpecialRise_T, _animSpecialSlam_T, _animSpecialRollOut_T;
+    protected int _animSpecialRise_T, _animSpecialSlam_T, _animSpecialRollOut_T, _animSpecialBash_T, _animSpecialBashRecovery_T;
     void Start()
     {
         AssignClassAnimationIDs();
         ControllerInit();
     }
+
+    #region Special Attack
     public override void Special()
     {
         if (SpendMagicOnAction(specialMagicCost))
@@ -45,6 +55,11 @@ public class PlayerClassBarbarian : PlayerController
         {
             ActionAnimFinished();
         }
+    }
+
+    public override bool CanAffordSpecial()
+    {
+        return Magic >= specialMagicCost;
     }
 
     private IEnumerator C_Special()
@@ -125,7 +140,7 @@ public class PlayerClassBarbarian : PlayerController
 
     public void SpecialHitFrame()
     {
-        List<KeyValuePair<CharacterHitbox, Vector3>> hits = CircleAttackHitboxCollisions(specialDistance);
+        List<KeyValuePair<CharacterHitbox, Vector3>> hits = CircleAttackHitboxCollisions(centerPoint.position, specialDistance);
         foreach (var c in hits)
         {
             bool killedEnemy = c.Key.Character.Damage(specialDamage, c.Value);
@@ -142,7 +157,9 @@ public class PlayerClassBarbarian : PlayerController
             Debug.Log("Character " + name + " has hit Character " + c.Key.Character.name + " for " + specialDamage + " damage.");
         }
     }
+    #endregion
 
+    #region Special Movement Overrides
     // While special is in effect, this gets called instead
     private void SpecialJumpGravity(bool tryJump)
     {
@@ -177,11 +194,95 @@ public class PlayerClassBarbarian : PlayerController
         // Apply internal velocity values
         controller.Move(new Vector3(_speed.x, _verticalVelocity, _speed.y) * Time.deltaTime);
     }
+    #endregion
+
+    #region Dash Special Attack
+    public override void DashSpecial()
+    {
+        if (SpendMagicOnAction(dashSpecialMagicCost))
+        {
+            StartCoroutine(C_DashSpecial());
+        }
+        else
+        {
+            ActionAnimFinished();
+        }
+    }
+
+    public override bool CanAffordDashSpecial()
+    {
+        return Magic >= dashSpecialMagicCost;
+    }
+
+    private IEnumerator C_DashSpecial()
+    {
+        // Use the override controller
+        model.Animator.SetTrigger(_animCancelAction_T); // <-- Set a cancel trigger to interrupt the previous dash animation
+        AnimatorOverrideSetEnabled(true);
+        model.Animator.SetTrigger(_animSpecialBash_T);
+        _doMagicRegen = false;
+        _hasMovement = false;
+        _canBeHit = false;
+        // Do dash speeds as this happens
+        _speed = _facingRight ? new(dashSpeed, 0) : new(-dashSpeed, 0);
+
+        bool hitFramePassed = false;
+        void HitFramePassed()
+        {
+            hitFramePassed = true;
+        }
+        model.AnimListener.OnDashSpecialHitFrame += HitFramePassed;
+
+        yield return new WaitUntil(() => hitFramePassed);
+
+        model.AnimListener.OnDashSpecialHitFrame -= HitFramePassed;
+
+        yield return new WaitUntil(() => Grounded);
+
+        // Hit frame passed and grounded, do attack now.
+        _speed = Vector2.zero;
+        Vector3 particleSpawn = forwardXPoint.position;
+        Instantiate(particleCircleSlashPrefab, particleSpawn, Quaternion.identity);
+        DashSpecialHitFrame();
+
+        // Start recovery animation
+        model.Animator.ResetTrigger(_animSpecialBash_T);
+        model.Animator.SetTrigger(_animSpecialBashRecovery_T);
+        yield return new WaitForSeconds(1.0f);
+
+        // Reset Variables
+        model.Animator.ResetTrigger(_animSpecialBashRecovery_T);
+        _hasControl = true;
+        _doMagicRegen = true;
+        _hasMovement = true;
+        _canBeHit = true;
+        PauseMagicRegenForTime(dashSpecialMagicRegenCooldown);
+        AnimatorOverrideSetEnabled(false);
+        model.Animator.ResetTrigger(_animCancelAction_T);
+        ActionAnimFinished();
+    }
+
+    public void DashSpecialHitFrame()
+    {
+        List<KeyValuePair<CharacterHitbox, Vector3>> hits = CircleAttackHitboxCollisions(forwardXPoint.position, dashSpecialDistance);
+        foreach (var c in hits)
+        {
+            bool killedEnemy = c.Key.Character.Damage(dashSpecialDamage, c.Value);
+            bool knockRight = c.Key.transform.position.x > forwardXPoint.position.x;
+            c.Key.Character.Knockback(knockRight, dashSpecialKnockbackForce);
+
+            Debug.Log("Character " + name + " has hit Character " + c.Key.Character.name + " for " + dashSpecialDamage + " damage.");
+        }
+    }
+    #endregion
+
 
     private void AssignClassAnimationIDs()
     {
         _animSpecialRise_T = Animator.StringToHash("Override_A");
         _animSpecialSlam_T = Animator.StringToHash("Override_B");
+        _animSpecialBash_T = Animator.StringToHash("Override_C");
+        _animSpecialBashRecovery_T = Animator.StringToHash("Override_D");
         _animSpecialRollOut_T = Animator.StringToHash("Roll");
     }
 }

@@ -397,20 +397,20 @@ public abstract class Character : MonoBehaviour
 
         return hits;
     }
-    protected List<KeyValuePair<CharacterHitbox, Vector3>> CircleAttackHitboxCollisions(float range)
+    protected List<KeyValuePair<CharacterHitbox, Vector3>> CircleAttackHitboxCollisions(Vector3 origin, float range)
     {
         // Do 8 rays (in each direction).
         List<RaycastHit> rays = new();
-        rays.AddRange(Physics.RaycastAll(centerPoint.position, transform.right, range, canAttackMask, QueryTriggerInteraction.Collide));    // +X
-        rays.AddRange(Physics.RaycastAll(centerPoint.position, -transform.right, range, canAttackMask, QueryTriggerInteraction.Collide));   // -X
-        rays.AddRange(Physics.RaycastAll(centerPoint.position, transform.forward, range, canAttackMask, QueryTriggerInteraction.Collide));  // +Z
-        rays.AddRange(Physics.RaycastAll(centerPoint.position, -transform.forward, range, canAttackMask, QueryTriggerInteraction.Collide)); // -Z
-        rays.AddRange(Physics.RaycastAll(centerPoint.position, (transform.right + transform.forward).normalized, range, canAttackMask, QueryTriggerInteraction.Collide));   // +X+Z
-        rays.AddRange(Physics.RaycastAll(centerPoint.position, -(transform.right + transform.forward).normalized, range, canAttackMask, QueryTriggerInteraction.Collide));  // -X-Z
-        rays.AddRange(Physics.RaycastAll(centerPoint.position, (-transform.right + transform.forward).normalized, range, canAttackMask, QueryTriggerInteraction.Collide));  // -X+Z
-        rays.AddRange(Physics.RaycastAll(centerPoint.position, (transform.right - transform.forward).normalized, range, canAttackMask, QueryTriggerInteraction.Collide));   // +X-Z
+        rays.AddRange(Physics.RaycastAll(origin, transform.right, range, canAttackMask, QueryTriggerInteraction.Collide));    // +X
+        rays.AddRange(Physics.RaycastAll(origin, -transform.right, range, canAttackMask, QueryTriggerInteraction.Collide));   // -X
+        rays.AddRange(Physics.RaycastAll(origin, transform.forward, range, canAttackMask, QueryTriggerInteraction.Collide));  // +Z
+        rays.AddRange(Physics.RaycastAll(origin, -transform.forward, range, canAttackMask, QueryTriggerInteraction.Collide)); // -Z
+        rays.AddRange(Physics.RaycastAll(origin, (transform.right + transform.forward).normalized, range, canAttackMask, QueryTriggerInteraction.Collide));   // +X+Z
+        rays.AddRange(Physics.RaycastAll(origin, -(transform.right + transform.forward).normalized, range, canAttackMask, QueryTriggerInteraction.Collide));  // -X-Z
+        rays.AddRange(Physics.RaycastAll(origin, (-transform.right + transform.forward).normalized, range, canAttackMask, QueryTriggerInteraction.Collide));  // -X+Z
+        rays.AddRange(Physics.RaycastAll(origin, (transform.right - transform.forward).normalized, range, canAttackMask, QueryTriggerInteraction.Collide));   // +X-Z
 
-        Collider[] cols = Physics.OverlapSphere(centerPoint.position, 0.01f, canAttackMask, QueryTriggerInteraction.Collide);
+        Collider[] cols = Physics.OverlapSphere(origin, 0.01f, canAttackMask, QueryTriggerInteraction.Collide);
 
         var hits = new List<KeyValuePair<CharacterHitbox, Vector3>>();
         var processed = new HashSet<GameObject>();
@@ -421,7 +421,7 @@ public abstract class Character : MonoBehaviour
             {
                 if (col.TryGetComponent(out CharacterHitbox hitbox))
                 {
-                    hits.Add(new(hitbox, centerPoint.position));
+                    hits.Add(new(hitbox, origin));
                 }
             }
         }
@@ -456,7 +456,6 @@ public abstract class Character : MonoBehaviour
     {
         for (int i = 0; i < model.Animator.layerCount; i++)
         {
-            print("i = " + model.Animator.GetLayerName(i));
             if (i == _animOverrideLayer)
             {
                 model.Animator.SetLayerWeight(i, enabled ? 1 : 0);

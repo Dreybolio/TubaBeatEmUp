@@ -5,8 +5,8 @@ public class CharacterAnimListener : MonoBehaviour
     public delegate void AnimationEvent();
     public event AnimationEvent OnLightHitFrame;
     public event AnimationEvent OnHeavyHitFrame;
-    public event AnimationEvent OnSpecialSnd;
     public event AnimationEvent OnSpecialHitFrame;
+    public event AnimationEvent OnDashSpecialHitFrame;
     public event AnimationEvent OnActionAnimOver;
 
     public void TriggerLightHitFrame()
@@ -21,9 +21,9 @@ public class CharacterAnimListener : MonoBehaviour
     {
         OnSpecialHitFrame?.Invoke();
     }
-    public void TriggerSpecialSnd()
+    public void TriggerDashSpecialHitFrame()
     {
-        OnSpecialSnd?.Invoke();
+        OnDashSpecialHitFrame?.Invoke();
     }
     public void TriggerActionAnimOver()
     {
