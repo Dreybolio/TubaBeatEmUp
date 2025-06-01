@@ -9,6 +9,9 @@ public class CharacterAnimListener : MonoBehaviour
     public event AnimationEvent OnDashSpecialHitFrame;
     public event AnimationEvent OnActionAnimOver;
 
+    // Special events that are generic purpose for some hard-coded animation event
+    public event AnimationEvent OnEvent01;
+
     public void TriggerLightHitFrame()
     {
         OnLightHitFrame?.Invoke();
@@ -28,5 +31,9 @@ public class CharacterAnimListener : MonoBehaviour
     public void TriggerActionAnimOver()
     {
         OnActionAnimOver?.Invoke();
+    }
+    public void TriggerEvent01()
+    {
+        OnEvent01?.Invoke();
     }
 }

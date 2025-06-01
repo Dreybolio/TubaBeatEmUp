@@ -161,7 +161,7 @@ public class PlayerClassBarbarian : PlayerController
 
     #region Special Movement Overrides
     // While special is in effect, this gets called instead
-    private void SpecialJumpGravity(bool tryJump)
+    private void SpecialJumpGravity(bool tryJump, float height)
     {
         // Do nothing, as we want no jumping and no gravity
     }

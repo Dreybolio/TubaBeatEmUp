@@ -88,9 +88,9 @@ public class EnemyController : Character
     private void Update()
     {
         GroundedCheck();
-        JumpAndGravity(false);
+        JumpAndGravity(false, jumpHeight);
         Move(_movementInput, speed, false);
-        if (_hasControl)
+        if (_doFaceMoveDir && _hasControl)
         {
             if (Target != null)
                 TurnFaceTarget(Target);
@@ -312,7 +312,7 @@ public class EnemyController : Character
      */
     public void LightAttackHitFrame()
     {
-        List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(lightAttackDistance);
+        List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(forwardXPoint.position, transform.right * transform.localScale.x, lightAttackDistance);
         foreach (var c in hits)
         {
             bool killedPlayer = c.Key.Character.Damage(lightAttackDamage, c.Value);
@@ -334,7 +334,7 @@ public class EnemyController : Character
     */
     public void HeavyAttackHitFrame()
     {
-        List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(heavyAttackDistance);
+        List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(forwardXPoint.position, transform.right * transform.localScale.x, heavyAttackDistance);
         foreach (var c in hits)
         {
             c.Key.Character.Damage(heavyAttackDamage, c.Value);

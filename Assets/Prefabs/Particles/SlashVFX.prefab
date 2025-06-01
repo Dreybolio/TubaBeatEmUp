@@ -9,6 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8924663182361701490}
+  - component: {fileID: 2477209007161983432}
+  - component: {fileID: 1208825942185212299}
+  - component: {fileID: 4306160628383777719}
   m_Layer: 7
   m_Name: SlashVFX
   m_TagString: Untagged
@@ -32,6 +35,53 @@ Transform:
   - {fileID: 8527481301651540786}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!95 &2477209007161983432
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2386003465961741669}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 22100000, guid: 6bf7c130363310d4eb2ddd2e516bf465, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1208825942185212299
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2386003465961741669}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a597dc7eb2f88ea4a8c44e53764f7e72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &4306160628383777719
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2386003465961741669}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db9d853c001b84f4aac4ef2bb236ae89, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _animListener: {fileID: 1208825942185212299}
 --- !u!1 &3288324987586563475
 GameObject:
   m_ObjectHideFlags: 0

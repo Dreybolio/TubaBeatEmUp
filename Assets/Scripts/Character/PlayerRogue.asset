@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   name: Noir
   description: Saxophone Rogue
-  spawnablePrefab: {fileID: 4107868876215196947, guid: 195bdbdd25c9e2c4ba92fa63b663093b, type: 3}
+  spawnablePrefab: {fileID: 6144980914151299805, guid: 195bdbdd25c9e2c4ba92fa63b663093b, type: 3}
   modelPrefab: {fileID: 1795148701609255359, guid: 8f020ab02e9a25f44b8939bf217b06e3, type: 3}

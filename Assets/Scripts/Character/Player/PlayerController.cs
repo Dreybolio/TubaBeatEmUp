@@ -24,6 +24,7 @@ public abstract class PlayerController : Character
     [SerializeField] protected float dashSpeed = 5.0f;
     [SerializeField] private float dashLength = 0.30f;
     [SerializeField] private float dashCooldown = 0.15f;
+    [SerializeField] private float dashJumpHeight = 1.65f;
 
     [Header("Actions - Drill")]
     [SerializeField] private float drillMagicCost = 55f;
@@ -57,10 +58,12 @@ public abstract class PlayerController : Character
     private ActionType _actionBuffer;
     private float _dashCooldown = 0f;
     private float _magicRegenCooldown = 0f;
-    private bool _attacksAlwaysKnockback = false;
+    protected bool _attacksAlwaysKnockback = false;
     private bool _actionAnimFinished = false;
+    private bool _dashing = false;
     private List<ActionType> _actionHistory = new();
     private Coroutine _actionBufferRoutine;
+    protected float _maxSpeed;
 
     // Anim
     protected int _animActionID_I, _animCancelAction_T;
@@ -68,6 +71,7 @@ public abstract class PlayerController : Character
     protected void ControllerInit()
     {
         Magic = MaxMagic;
+        _maxSpeed = speed;
         AssignExtraAnimationIDs();
         GameUI.Instance.AddPlayerUI(this);
         CharacterInit();
@@ -104,14 +108,14 @@ public abstract class PlayerController : Character
     private void Update()
     {
         GroundedCheck();
-        JumpAndGravity(Player.GetPlayerJump());
+        JumpAndGravity(Player.GetPlayerJump(), _dashing ? dashJumpHeight : jumpHeight);
         if (Player != null && Player.GetPlayerJumpReleased())
         {
             InterruptJump();
         }
         Vector2 moveVec = Player != null ? Player.GetPlayerMovement().normalized : Vector2.zero;
-        Move(moveVec, speed);
-        if (_hasControl)
+        Move(moveVec, _maxSpeed);
+        if (_doFaceMoveDir && _hasControl)
             TurnFaceMoveDir();
         // else, you don't get to choose what direction you face!
         ApplyVelocity();
@@ -275,9 +279,29 @@ public abstract class PlayerController : Character
             Player.OnPlayerAction += OverrideAction;
         }
 
+        _dashing = true;
         float timer = 0f;
         while (timer < dashLength)
         {
+            // Check for Dash-Jump
+            if (Player.GetPlayerJump() && Grounded)
+            {
+                // A jump will go through. Although it's not handled here, still stop the dash and increase midair speed
+                // Cancel this dash
+                if (Player != null)
+                {
+                    Player.OnPlayerAction += DoAction;
+                    Player.OnPlayerAction -= OverrideAction;
+                }
+                _doMagicRegen = true;
+                PauseMagicRegenForTime(dashMagicRegenCooldown);
+                model.Animator.SetInteger(_animActionID_I, (int)ActionType.NONE);
+                model.Animator.SetTrigger(_animCancelAction_T);
+                StartCoroutine(C_DashJump());
+                yield break;
+            }
+
+            // Check for action overrides
             if (actionOverride == ActionType.ATTACK_LIGHT)
             {
                 // Override this dash into a spin
@@ -287,6 +311,7 @@ public abstract class PlayerController : Character
                     Player.OnPlayerAction -= OverrideAction;
                 }
                 _doMagicRegen = true;
+                _dashing = false;
                 PauseMagicRegenForTime(dashMagicRegenCooldown);
                 SpinAttack();
                 yield break;
@@ -307,6 +332,8 @@ public abstract class PlayerController : Character
                         Player.OnPlayerAction += DoAction;
                         Player.OnPlayerAction -= OverrideAction;
                     }
+                    // No need to pause magic regen, the drill attack does this at the end of its own routine
+                    _dashing = false;
                     Drill();
                     yield break;
                 }
@@ -325,6 +352,8 @@ public abstract class PlayerController : Character
                         Player.OnPlayerAction += DoAction;
                         Player.OnPlayerAction -= OverrideAction;
                     }
+                    _dashing = false;
+                    model.Animator.SetInteger(_animActionID_I, (int)ActionType.NONE);
                     DashSpecial();
                     yield break;
                 }
@@ -341,6 +370,7 @@ public abstract class PlayerController : Character
         }
 
         // Dash over, return to normal parameters
+        _dashing = false;
         _hasMovement = true;
         _canBeHit = true;
         _doMagicRegen = true;
@@ -348,6 +378,17 @@ public abstract class PlayerController : Character
 
         ActionAnimFinished();
     }
+
+    private IEnumerator C_DashJump()
+    {
+        // The actual jump part is handled in the Update loop, this just increases speed until we ground again
+        _maxSpeed = dashSpeed;
+        // Wait slightly to allow for liftoff
+        yield return new WaitForSeconds(0.25f);
+        yield return new WaitUntil(() => Grounded);
+        _maxSpeed = speed;
+    }
+
     #region Spin Attack
     public void SpinAttack()
     {
@@ -415,7 +456,7 @@ public abstract class PlayerController : Character
      */
     public void LightAttackHitFrame()
     {
-        List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(lightAttackDistance);
+        List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(forwardXPoint.position, transform.right * transform.localScale.x, lightAttackDistance);
         foreach (var c in hits)
         {
             bool killedEnemy = c.Key.Character.Damage(lightAttackDamage, c.Value);
@@ -437,7 +478,7 @@ public abstract class PlayerController : Character
     */
     public void HeavyAttackHitFrame()
     {
-        List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(heavyAttackDistance);
+        List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(forwardXPoint.position, transform.right * transform.localScale.x, heavyAttackDistance);
         bool didDoubleHeavy = false;
         if (_actionHistory.Count > 0 && _actionHistory[^1] == ActionType.ATTACK_HEAVY)
         {

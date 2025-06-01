@@ -66,7 +66,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bea067a46d97ab04fa671f42e10b67ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _character: {fileID: 4107868876215196947}
+  _character: {fileID: 0}
 --- !u!1 &1707703840739589374
 GameObject:
   m_ObjectHideFlags: 0
@@ -138,7 +138,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6653673274576358574}
-  - component: {fileID: 4107868876215196947}
+  - component: {fileID: 6144980914151299805}
   - component: {fileID: 3705284323928190345}
   m_Layer: 7
   m_Name: PlayerRogue
@@ -168,7 +168,7 @@ Transform:
   - {fileID: 4568874844299627501}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4107868876215196947
+--- !u!114 &6144980914151299805
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -177,7 +177,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 4867231784695951723}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dd4403112b419114e818236598c04d85, type: 3}
+  m_Script: {fileID: 11500000, guid: 75df050e5b3a72343a8db75e4d6a1625, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 3
@@ -213,27 +213,26 @@ MonoBehaviour:
   dashSpeed: 6
   dashLength: 0.2
   dashCooldown: 0.15
+  dashJumpHeight: 1.65
   drillMagicCost: 55
-  drillMagicRegenCooldown: 1.15
+  drillMagicRegenCooldown: 0.75
   MaxMagic: 100
   magicRegenRate: 1
-  sndSpecial: {fileID: 8300000, guid: e4ef28fa8a907714184b15594f7fc74a, type: 3}
+  sndSpecial: {fileID: 0}
   Icon: {fileID: 759965487, guid: 07243dcd721647e40ab1dc36777878b0, type: 3}
   specialMagicCost: 60
   specialMagicRegenCooldown: 0.75
-  specialDistance: 1.25
-  specialDamage: 4
+  specialDistance: 1
+  specialDamage: 2
   specialKnockbackForce: 1.1
   specialAirborneKnockbackForce: 1.4
-  specialRiseHeight: 2
-  specialRiseTime: 0.3
-  specialRiseHorizSpeed: 3
-  specialSlamHorizSpeed: 6
-  specialSlamVertSpeed: -10
-  specialNormalAcceleration: 3
-  specialFastAcceleration: 30
-  specialCustomGravity: -20
-  particleCircleSlashPrefab: {fileID: 6837936505167167141, guid: e2c2b8864cda0b54e89d709e8ff77c2b, type: 3}
+  specialSpinRef: {fileID: 4528588250642034781}
+  dashSpecialMagicCost: 60
+  dashSpecialMagicRegenCooldown: 0.75
+  dashSpecialDistance: 2
+  dashSpecialDamage: 3
+  dashSpecialKnockbackForce: 3
+  particleSlashPrefab: {fileID: 4306160628383777719, guid: 2dc81a2262b2b244495a9eca44dc67e1, type: 3}
 --- !u!143 &3705284323928190345
 CharacterController:
   m_ObjectHideFlags: 0
@@ -378,6 +377,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8f020ab02e9a25f44b8939bf217b06e3, type: 3}
+--- !u!4 &4528588250642034781 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5018800467320649605, guid: 8f020ab02e9a25f44b8939bf217b06e3, type: 3}
+  m_PrefabInstance: {fileID: 8898720793579522008}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &5633565818099035016 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3841826846297812048, guid: 8f020ab02e9a25f44b8939bf217b06e3, type: 3}

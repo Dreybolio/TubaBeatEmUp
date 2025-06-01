@@ -61,7 +61,7 @@ public abstract class Character : MonoBehaviour
     [NonSerialized] public AI_SquadRole SquadRole;
 
     // Override Functions
-    Action<bool> jumpGravityOverride;
+    Action<bool, float> jumpGravityOverride;
     Action<Vector2> moveOverride;
     Action applyVelocityOverride;
 
@@ -72,6 +72,8 @@ public abstract class Character : MonoBehaviour
     protected readonly float _terminalVelocity = 53.0f;
     protected bool _hasControl = true;
     protected bool _hasMovement = true;
+    protected bool _doFaceMoveDir = true;
+    protected bool _allowJump = true;
     protected bool _canBeHit = true;
     protected bool _stunImmunity = false;
     protected Coroutine _knockbackRoutine;
@@ -93,16 +95,16 @@ public abstract class Character : MonoBehaviour
         AssignAnimationIDs();
     }
 
-    protected void OverrideJumpGravity(Action<bool> newJumpGrav)
+    protected void OverrideJumpGravity(Action<bool, float> newJumpGrav)
     {
         // Call this with null to cancel
         jumpGravityOverride = newJumpGrav;
     }
-    protected void JumpAndGravity(bool tryJump)
+    protected void JumpAndGravity(bool tryJump, float height)
     {
         if (jumpGravityOverride != null)
         {
-            jumpGravityOverride.Invoke(tryJump);
+            jumpGravityOverride.Invoke(tryJump, height);
             return;
         }
 
@@ -115,10 +117,10 @@ public abstract class Character : MonoBehaviour
             {
                 _verticalVelocity = -2f;
             }
-            if (_hasControl && tryJump) // If trying to jump
+            if (_hasControl && _allowJump && tryJump) // If trying to jump
             {
                 // the square root of H * -2 * G = how much velocity needed to reach desired height
-                _verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravityScale);
+                _verticalVelocity = Mathf.Sqrt(height * -2f * gravityScale);
             }
         }
         else
@@ -360,13 +362,13 @@ public abstract class Character : MonoBehaviour
         _hasControl = true;
     }
 
-    protected List<KeyValuePair<CharacterHitbox, Vector3>> ForwardAttackHitboxCollisions(float range)
+    protected List<KeyValuePair<CharacterHitbox, Vector3>> ForwardAttackHitboxCollisions(Vector3 origin, Vector3 direction, float range)
     {
-        Collider[] cols = Physics.OverlapSphere(forwardXPoint.position, 0.01f, canAttackMask, QueryTriggerInteraction.Collide);
+        Collider[] cols = Physics.OverlapSphere(origin, 0.01f, canAttackMask, QueryTriggerInteraction.Collide);
         // Check at the middle, top & bottom of the collider. Raycasts as follows:
-        RaycastHit[] raysMid = Physics.RaycastAll(forwardXPoint.position, transform.right * transform.localScale.x, range, canAttackMask, QueryTriggerInteraction.Collide);
-        RaycastHit[] rayTop = Physics.RaycastAll(forwardXPoint.position + new Vector3(0f, controller.height / 2f, 0f), transform.right * transform.localScale.x, range, canAttackMask, QueryTriggerInteraction.Collide);
-        RaycastHit[] rayBottom = Physics.RaycastAll(forwardXPoint.position + new Vector3(0f, -controller.height / 2f, 0f), transform.right * transform.localScale.x, range, canAttackMask, QueryTriggerInteraction.Collide);
+        RaycastHit[] raysMid = Physics.RaycastAll(origin, direction, range, canAttackMask, QueryTriggerInteraction.Collide);
+        RaycastHit[] rayTop = Physics.RaycastAll(origin + new Vector3(0f, controller.height / 2f, 0f), direction, range, canAttackMask, QueryTriggerInteraction.Collide);
+        RaycastHit[] rayBottom = Physics.RaycastAll(origin + new Vector3(0f, -controller.height / 2f, 0f), direction, range, canAttackMask, QueryTriggerInteraction.Collide);
         RaycastHit[] rays = raysMid.Union(rayTop).Union(rayBottom).ToArray();
 
         var hits = new List<KeyValuePair<CharacterHitbox, Vector3>>();
@@ -378,7 +380,7 @@ public abstract class Character : MonoBehaviour
             {
                 if (col.TryGetComponent(out CharacterHitbox hitbox))
                 {
-                    hits.Add(new(hitbox, forwardXPoint.position));
+                    hits.Add(new(hitbox, origin));
                 }
             }
         }
@@ -393,7 +395,7 @@ public abstract class Character : MonoBehaviour
                 }
             }
         }
-        Debug.DrawLine(forwardXPoint.position, forwardXPoint.position + range * transform.localScale.x * transform.right, Color.green, 0.5f);
+        Debug.DrawLine(origin, origin + range * direction, Color.green, 0.5f);
 
         return hits;
     }
