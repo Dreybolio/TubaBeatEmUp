@@ -32,6 +32,7 @@ public class TriggerEncounter : Trigger
             for (int i = 0; i < PlayerManager.Instance.Players.Count; i++)
             {
                 Character c = Instantiate(enemy.prefab, enemy.spawnPos.position, Quaternion.identity);
+                c.name = $"{enemy.prefab.name} {_totalEnemies}";
                 c.OnDeath += EnemyKilled;
                 _totalEnemies++;
             }
@@ -41,6 +42,7 @@ public class TriggerEncounter : Trigger
             for (int i = 0; i < (PlayerManager.Instance.Players.Count + 1) / 2; i++)
             {
                 Character c = Instantiate(enemy.prefab, enemy.spawnPos.position, Quaternion.identity);
+                c.name = $"{enemy.prefab.name} {_totalEnemies}";
                 c.OnDeath += EnemyKilled;
                 _totalEnemies++;
             }
@@ -48,6 +50,7 @@ public class TriggerEncounter : Trigger
         foreach (var enemy in staticEnemies)
         {
             Character c = Instantiate(enemy.prefab, enemy.spawnPos.position, Quaternion.identity);
+            c.name = $"{enemy.prefab.name} {_totalEnemies}";
             c.OnDeath += EnemyKilled;
             _totalEnemies++;
         }

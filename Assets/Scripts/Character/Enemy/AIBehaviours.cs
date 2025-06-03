@@ -1,6 +1,8 @@
 using JetBrains.Annotations;
+using NUnit.Framework;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -10,13 +12,15 @@ using Random = UnityEngine.Random;
 
 public class AIBehaviours : MonoBehaviour
 {
-    [NonSerialized] public Transform Target;
-
     [SerializeField] private float _navCornerCutDistance = 0.5f;
     [SerializeField] private float _navTargetLeniencyThreshold = 0.15f;
     [SerializeField] private float _navAvoidEnemiesDistance = 0.35f;
+    [NonSerialized] public EnemyController Enemy;
 
     // Constants
+    private float ATTACK_CHANGEROLE_OFFENSE_CHANCE = 75.0f;
+    private float CHANGE_TARGET_TIME = 3.0f;
+
     private float COVER_EXIT_MIN_DIST = 1.5f;
     private float COVER_EXIT_MAX_DIST = 3.5f;
     private float COVER_EXIT_FAR_MIN_DIST = 3.0f;
@@ -31,7 +35,6 @@ public class AIBehaviours : MonoBehaviour
 
     // Vars
     private NavMeshPath _path;
-    private Character _character;
     private Vector3 _targetPos;
     private Vector3 _targetPosAlt;
     private float _attackTimer = 0.5f;
@@ -44,10 +47,16 @@ public class AIBehaviours : MonoBehaviour
     private bool _favourAltPath = false;
     private bool _forceOffense = false;
 
+    private float _changeTargetTimer;
+    private List<Transform> _playerTransforms;
+    private Transform _closestPlayer;
+
     private void Start()
     {
-        _character = GetComponent<Character>();
+        Enemy = GetComponent<EnemyController>();
+        _playerTransforms = PlayerManager.Instance.Players.Select(p => p.Controller.transform).ToList();
         _path = new NavMeshPath();
+        _changeTargetTimer = CHANGE_TARGET_TIME;
     }
     private void Update()
     {
@@ -60,17 +69,37 @@ public class AIBehaviours : MonoBehaviour
         {
             _pathTimer -= Time.deltaTime;
         }
+
+        // See if we should try to change targets
+        if (_changeTargetTimer < 0)
+        {
+            Enemy.RequestChangeTarget(_closestPlayer);
+            _changeTargetTimer = CHANGE_TARGET_TIME;
+        }
+        else if (_closestPlayer != Enemy.Target)
+        {
+            _changeTargetTimer -= Time.deltaTime;
+        }
+        else
+        {
+            _changeTargetTimer = CHANGE_TARGET_TIME;
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        _closestPlayer = _playerTransforms.OrderBy(p => Vector3.Distance(transform.position, p.transform.position)).FirstOrDefault();
     }
 
     public AI_Decision MakeDecision(AI_SquadRole role, int aiDifficulty)
     {
-        if (Target == null) return new AI_Decision { action = AI_Action.IDLE };
+        if (Enemy.Target == null) return new AI_Decision { action = AI_Action.IDLE };
 
         //**
         //**    Try for an attack
         //**
-        float xDistFromTarget = Mathf.Abs(Target.position.x - transform.position.x);
-        float zDistFromTarget = Mathf.Abs(Target.position.z - transform.position.z);
+        float xDistFromTarget = Mathf.Abs(Enemy.Target.transform.position.x - transform.position.x);
+        float zDistFromTarget = Mathf.Abs(Enemy.Target.transform.position.z - transform.position.z);
         if (xDistFromTarget < 1.5f && zDistFromTarget < 0.35f)
         {
             // If close enough to safely make an attack
@@ -80,6 +109,10 @@ public class AIBehaviours : MonoBehaviour
                 float diffMod = aiDifficulty > 1 ? Mathf.Log(aiDifficulty, 3) : 0.5f; // Log base 3. Base case of .5 on AI Level 1
                 _attackTimer = (2 / diffMod) + (Random.Range(0f, 1f) - 0.5f);
                 // Attack!
+                if (Random.Range(0f, 100f) <= ATTACK_CHANGEROLE_OFFENSE_CHANCE)
+                {
+                    return new AI_Decision { action = AI_Action.ATTACK, actionOverride = AI_Action_Override.CHANGEROLE_OFFENSE};
+                }
                 return new AI_Decision { action = AI_Action.ATTACK };
             }
             else
@@ -114,13 +147,13 @@ public class AIBehaviours : MonoBehaviour
     {
         // Try to get to the player (right or left, whichever is closer)
         _targetPos = new(
-            Target.position.x + (transform.position.x > Target.position.x ? 1.25f : -1.25f),
-            Target.position.y, Target.position.z
+            Enemy.Target.transform.position.x + (transform.position.x > Enemy.Target.transform.position.x ? 1.25f : -1.25f),
+            Enemy.Target.transform.position.y, Enemy.Target.transform.position.z
         );
         // Set emergency alternate go-to point to be the other. Is case player is hugging a wall or something.
         _targetPosAlt = new(
-            Target.position.x + (transform.position.x > Target.position.x ? -1.25f : 1.25f),
-            Target.position.y, Target.position.z
+            Enemy.Target.transform.position.x + (transform.position.x > Enemy.Target.transform.position.x ? -1.25f : 1.25f),
+            Enemy.Target.transform.position.y, Enemy.Target.transform.position.z
         );
         if (Mathf.Abs(Vector3.Distance(transform.position, _targetPos)) < _navTargetLeniencyThreshold)
         {
@@ -133,7 +166,7 @@ public class AIBehaviours : MonoBehaviour
             DrawPath(_path);
             // Path is what we shall now follow! Go to first corner.
             Vector2 moveDir;
-            if (_path.corners.Length > 2 && Mathf.Abs(Vector3.Distance(_path.corners[1], Target.position)) < _navCornerCutDistance)
+            if (_path.corners.Length > 2 && Mathf.Abs(Vector3.Distance(_path.corners[1], Enemy.Target.transform.position)) < _navCornerCutDistance)
             {
                 // If this is a complicated path, see if we're close enough to cut a corner now
                 moveDir = new(_path.corners[2].x - transform.position.x, _path.corners[2].z - transform.position.z);
@@ -150,14 +183,14 @@ public class AIBehaviours : MonoBehaviour
     #region Cover Exit State
     private AI_Decision DecideCoverExit()
     {
-        float targetDistance = Vector3.Distance(_targetPos, Target.position);
+        float targetDistance = Vector3.Distance(_targetPos, Enemy.Target.transform.position);
         if (targetDistance > COVER_EXIT_MAX_DIST || targetDistance < COVER_EXIT_MIN_DIST || _path == null || (_path != null && _path.corners.Length < 1))
         {
             // This targetPos is no longer any good, either cause it's no longer in range or cause it's inaccessible
             float randomAcceptableRange = COVER_EXIT_MIN_DIST + Random.Range(0f, COVER_EXIT_MAX_DIST);
             _targetPos = new(
-                Target.position.x + (transform.position.x > Target.position.x ? randomAcceptableRange : -randomAcceptableRange),
-                Target.position.y, Target.position.z + Random.Range(-2f, 2f)
+                Enemy.Target.transform.position.x + (transform.position.x > Enemy.Target.transform.position.x ? randomAcceptableRange : -randomAcceptableRange),
+                Enemy.Target.transform.position.y, Enemy.Target.transform.position.z + Random.Range(-2f, 2f)
             );
         }
         // Set emergency alternate go-to point to be the other side. In case player is hugging a wall or something.
@@ -166,8 +199,8 @@ public class AIBehaviours : MonoBehaviour
             // This targetPos is no longer any good, either cause it's no longer in range or cause it's inaccessible
             float randomAcceptableRange = COVER_EXIT_MIN_DIST + Random.Range(0f, COVER_EXIT_MAX_DIST);
             _targetPosAlt = new(
-                Target.position.x + (transform.position.x > Target.position.x ? -randomAcceptableRange : randomAcceptableRange),
-                Target.position.y, Target.position.z + Random.Range(-2f, 2f)
+                Enemy.Target.transform.position.x + (transform.position.x > Enemy.Target.transform.position.x ? -randomAcceptableRange : randomAcceptableRange),
+                Enemy.Target.transform.position.y, Enemy.Target.transform.position.z + Random.Range(-2f, 2f)
             );
         }
         if (Mathf.Abs(Vector3.Distance(transform.position, !_favourAltPath ? _targetPos : _targetPosAlt)) < _navTargetLeniencyThreshold)
@@ -210,7 +243,7 @@ public class AIBehaviours : MonoBehaviour
             DrawPath(_path);
             // Path is what we shall now follow! Go to first corner.
             Vector2 moveDir;
-            if (_path.corners.Length > 2 && Mathf.Abs(Vector3.Distance(_path.corners[1], Target.position)) < _navCornerCutDistance)
+            if (_path.corners.Length > 2 && Mathf.Abs(Vector3.Distance(_path.corners[1], Enemy.Target.transform.position)) < _navCornerCutDistance)
             {
                 // If this is a complicated path, see if we're close enough to cut a corner now
                 moveDir = new(_path.corners[2].x - transform.position.x, _path.corners[2].z - transform.position.z);
@@ -228,14 +261,14 @@ public class AIBehaviours : MonoBehaviour
     private AI_Decision DecideCoverExitFar()
     {
         // Try to stand on either side of the player
-        float targetDistanceFar = Vector3.Distance(_targetPos, Target.position);
+        float targetDistanceFar = Vector3.Distance(_targetPos, Enemy.Target.transform.position);
         if (targetDistanceFar > COVER_EXIT_FAR_MAX_DIST || targetDistanceFar < COVER_EXIT_FAR_MIN_DIST || _path == null || (_path != null && _path.corners.Length < 1))
         {
             // This targetPos is no longer any good, either cause it's no longer in range or cause it's inaccessible
             float randomAcceptableRange = COVER_EXIT_FAR_MIN_DIST + Random.Range(0f, COVER_EXIT_FAR_MAX_DIST);
             _targetPos = new(
-                Target.position.x + (transform.position.x > Target.position.x ? randomAcceptableRange : -randomAcceptableRange),
-                Target.position.y, Target.position.z + Random.Range(-2f, 2f)
+                Enemy.Target.transform.position.x + (transform.position.x > Enemy.Target.transform.position.x ? randomAcceptableRange : -randomAcceptableRange),
+                Enemy.Target.transform.position.y, Enemy.Target.transform.position.z + Random.Range(-2f, 2f)
             );
         }
         // Set emergency alternate go-to point to be the other side. In case player is hugging a wall or something.
@@ -244,8 +277,8 @@ public class AIBehaviours : MonoBehaviour
             // This targetPos is no longer any good, either cause it's no longer in range or cause it's inaccessible
             float randomAcceptableRange = COVER_EXIT_FAR_MIN_DIST + Random.Range(0f, COVER_EXIT_FAR_MAX_DIST);
             _targetPosAlt = new(
-                Target.position.x + (transform.position.x > Target.position.x ? -randomAcceptableRange : randomAcceptableRange),
-                Target.position.y, Target.position.z + Random.Range(-2f, 2f)
+                Enemy.Target.transform.position.x + (transform.position.x > Enemy.Target.transform.position.x ? -randomAcceptableRange : randomAcceptableRange),
+                Enemy.Target.transform.position.y, Enemy.Target.transform.position.z + Random.Range(-2f, 2f)
             );
         }
         if (Mathf.Abs(Vector3.Distance(transform.position, !_favourAltPath ? _targetPos : _targetPosAlt)) < _navTargetLeniencyThreshold)
@@ -277,7 +310,7 @@ public class AIBehaviours : MonoBehaviour
             DrawPath(_path);
             // Path is what we shall now follow! Go to first corner.
             Vector2 moveDir;
-            if (_path.corners.Length > 2 && Mathf.Abs(Vector3.Distance(_path.corners[1], Target.position)) < _navCornerCutDistance)
+            if (_path.corners.Length > 2 && Mathf.Abs(Vector3.Distance(_path.corners[1], Enemy.Target.transform.position)) < _navCornerCutDistance)
             {
                 // If this is a complicated path, see if we're close enough to cut a corner now
                 moveDir = new(_path.corners[2].x - transform.position.x, _path.corners[2].z - transform.position.z);
@@ -308,10 +341,11 @@ public class AIBehaviours : MonoBehaviour
         }
         // If the chosen path's last point intersects with another enemy, then try to adjust it to avoid stacking.
 
-        print($"Corners: {_path.corners}");
         Vector3 last = _path.corners[^1];
-        print($"Last: {last}");
-        Character closest = EnemyManager.Instance.Enemies.OrderBy(e => Vector3.Distance(e.transform.position, last)).FirstOrDefault();
+        Character closest = EnemyManager.Instance.Enemies
+            .Where(e => e != Enemy)
+            .OrderBy(e => Vector3.Distance(e.transform.position, last))
+            .FirstOrDefault();
         if (closest != null && Vector3.Distance(closest.transform.position, last) < _navAvoidEnemiesDistance)
         {
             // This final path point is no good, it's too close to an existing enemy. Find the closest point that works
@@ -324,7 +358,9 @@ public class AIBehaviours : MonoBehaviour
                 sampleDir = Quaternion.Euler(0f, 45f, 0f) * sampleDir;
                 sampleDir.Normalize();
                 sample = last + (sampleDir * (_navAvoidEnemiesDistance + 0.1f));
-                closest = EnemyManager.Instance.Enemies.OrderBy(e => Vector3.Distance(e.transform.position, sample)).FirstOrDefault();
+                closest = EnemyManager.Instance.Enemies
+                    .OrderBy(e => Vector3.Distance(e.transform.position, sample))
+                    .FirstOrDefault();
                 if (closest != null && Vector3.Distance(closest.transform.position, sample) >= _navAvoidEnemiesDistance)
                 {
                     // This new point is far enough away, consider it valid.

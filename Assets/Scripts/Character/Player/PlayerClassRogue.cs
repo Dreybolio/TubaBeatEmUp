@@ -157,7 +157,7 @@ public class PlayerClassRogue: PlayerController
                 // Character Grounded and we didn't kill them. Apply small stun
                 c.Key.Character.HurtStun();
             }
-            Debug.Log("Character " + name + " has hit Character " + c.Key.Character.name + " for " + specialDamage + " damage.");
+            // Debug.Log("Character " + name + " has hit Character " + c.Key.Character.name + " for " + specialDamage + " damage.");
         }
     }
     #endregion

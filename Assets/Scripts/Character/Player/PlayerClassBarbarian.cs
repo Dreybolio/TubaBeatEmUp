@@ -154,7 +154,7 @@ public class PlayerClassBarbarian : PlayerController
                 // Character Grounded. Do regular knockback
                 c.Key.Character.Knockback(knockRight, specialKnockbackForce);
             }
-            Debug.Log("Character " + name + " has hit Character " + c.Key.Character.name + " for " + specialDamage + " damage.");
+            //Debug.Log("Character " + name + " has hit Character " + c.Key.Character.name + " for " + specialDamage + " damage.");
         }
     }
     #endregion
@@ -190,7 +190,6 @@ public class PlayerClassBarbarian : PlayerController
     // While special is in effect, this gets called instead
     private void SpecialApplyVelocity()
     {
-        print("Apply Velocity");
         // Apply internal velocity values
         controller.Move(new Vector3(_speed.x, _verticalVelocity, _speed.y) * Time.deltaTime);
     }
@@ -271,7 +270,7 @@ public class PlayerClassBarbarian : PlayerController
             bool knockRight = c.Key.transform.position.x > forwardXPoint.position.x;
             c.Key.Character.Knockback(knockRight, dashSpecialKnockbackForce);
 
-            Debug.Log("Character " + name + " has hit Character " + c.Key.Character.name + " for " + dashSpecialDamage + " damage.");
+            // Debug.Log("Character " + name + " has hit Character " + c.Key.Character.name + " for " + dashSpecialDamage + " damage.");
         }
     }
     #endregion

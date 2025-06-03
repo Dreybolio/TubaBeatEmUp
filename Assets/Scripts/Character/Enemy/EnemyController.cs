@@ -24,7 +24,7 @@ public class EnemyController : Character
     [SerializeField] private int aiDifficulty = 1;
     [SerializeField] private float stunImmunityResetTimer = 2.5f;
     [SerializeField] private int stunsUntilImmunity = 5;
-    [SerializeField] private int squadID = 0;
+    public int SquadID = 0;
 
     [Header("Combos - Light")]
     [SerializeField] private AttackCombo comboDoubleLight;
@@ -33,6 +33,10 @@ public class EnemyController : Character
     [Header("Combos - Heavy")]
     [SerializeField] private AttackCombo comboDoubleHeavy;
     private List<AttackCombo> combos;
+
+    // Vars for AI (Ignored when PlayerController inhereits this)
+    [NonSerialized] public Character Target;
+    [NonSerialized] public AI_SquadRole SquadRole;
 
     // Events
     protected event CharacterEvent OnActionFinished;
@@ -57,8 +61,8 @@ public class EnemyController : Character
         AssignComboData();
         CharacterInit();
         EnemyManager.Instance.Enemies.Add(this);
-        EnemyManager.Instance.AddToSquad(this, squadID);
-        TryFindTarget();
+        EnemyManager.Instance.AddToSquad(this, SquadID);
+        aiBehaviour.Enemy = this;
         StartCoroutine(C_AILoop());
     }
 
@@ -71,7 +75,7 @@ public class EnemyController : Character
         // Events with oneself
         OnLoseControl += CancelAction;
         OnHurtStun += HurtStunCounter;
-        OnDeath += RemoveSelfEnemyManager;
+        OnDeath += EnemyDeath;
     }
     private void OnDisable()
     {
@@ -82,7 +86,7 @@ public class EnemyController : Character
         // Events with oneself
         OnLoseControl -= CancelAction;
         OnHurtStun -= HurtStunCounter;
-        OnDeath -= RemoveSelfEnemyManager;
+        OnDeath += EnemyDeath;
     }
 
     private void Update()
@@ -93,7 +97,7 @@ public class EnemyController : Character
         if (_doFaceMoveDir && _hasControl)
         {
             if (Target != null)
-                TurnFaceTarget(Target);
+                TurnFaceTarget(Target.transform);
             else
                 TurnFaceMoveDir();
         }
@@ -116,9 +120,10 @@ public class EnemyController : Character
 
     private void FixedUpdate()
     {
-        if (Target == null)
+        if (Target == null || Target.Health <= 0)
         {
-            TryFindTarget();
+            Debug.Log("Target Invalid: Forcing EnemyManager to rebalance targets");
+            EnemyManager.Instance.BalanceSquad(SquadID);
         }
     }
 
@@ -143,6 +148,17 @@ public class EnemyController : Character
 
                 case AI_Action.MOVE:
                     _movementInput = decision.data;
+                    break;
+            }
+
+            switch (decision.actionOverride)
+            {
+                case AI_Action_Override.NONE:
+                    break;
+                case AI_Action_Override.CHANGEROLE_OFFENSE:
+                    EnemyManager.Instance.AddRoleOverride(this, AI_SquadRole.OFFENSE);
+                    break;
+                default:
                     break;
             }
             yield return null;
@@ -324,7 +340,7 @@ public class EnemyController : Character
             {
                 c.Key.Character.HurtStun();
             }
-            Debug.Log("Character " + name + " has hit Character " + c.Key.Character.name + " for " + lightAttackDamage + " damage.");
+            // Debug.Log("Character " + name + " has hit Character " + c.Key.Character.name + " for " + lightAttackDamage + " damage.");
         }
         _attackHitFramePassed = true;
     }
@@ -346,9 +362,16 @@ public class EnemyController : Character
             {
                 c.Key.Character.HurtStun();
             }
-            Debug.Log("Character " + name + " has hit Character " + c.Key.Character.name + " for " + heavyAttackDamage + " damage.");
+            // Debug.Log("Character " + name + " has hit Character " + c.Key.Character.name + " for " + heavyAttackDamage + " damage.");
         }
         _attackHitFramePassed = true;
+    }
+
+    private void EnemyDeath()
+    {
+        StartCoroutine(C_BlinkOut());
+        EnemyManager.Instance.Enemies.Remove(this);
+        EnemyManager.Instance.RemoveFromSquad(this, SquadID);
     }
 
     private void HurtStunCounter()
@@ -358,21 +381,11 @@ public class EnemyController : Character
         _stunImmunity = (_stunCount > stunsUntilImmunity);
     }
 
-    private void RemoveSelfEnemyManager()
+    public void RequestChangeTarget(Transform newTarget)
     {
-        EnemyManager.Instance.Enemies.Remove(this);
-        EnemyManager.Instance.RemoveFromSquad(this, squadID);
+        EnemyManager.Instance.AddTargetOverride(this, newTarget);
     }
 
-    private void TryFindTarget()
-    {
-        var player = FindAnyObjectByType<PlayerController>();
-        if (player != null)
-        {
-            Target = player.transform;
-            aiBehaviour.Target = Target;
-        }
-    }
     public void AssignExtraAnimationIDs()
     {
         _animActionID_I = Animator.StringToHash("ActionID");

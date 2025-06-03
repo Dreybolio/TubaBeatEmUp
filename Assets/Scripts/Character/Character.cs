@@ -54,11 +54,7 @@ public abstract class Character : MonoBehaviour
 
     // Public Vars
     public bool Grounded { get; protected set; }
-    public  int Health { get; protected set; }
-
-    // Vars for AI (Ignored when PlayerController inhereits this)
-    public Transform Target { get; protected set; }
-    [NonSerialized] public AI_SquadRole SquadRole;
+    public int Health { get; protected set; }
 
     // Override Functions
     Action<bool, float> jumpGravityOverride;
@@ -76,6 +72,7 @@ public abstract class Character : MonoBehaviour
     protected bool _allowJump = true;
     protected bool _canBeHit = true;
     protected bool _stunImmunity = false;
+    protected float _damageMult = 1.0f;
     protected Coroutine _knockbackRoutine;
     protected Coroutine _hurtStunRoutine;
 
@@ -261,10 +258,9 @@ public abstract class Character : MonoBehaviour
         _hasControl = false;
         _canBeHit = false;
         _speed = Vector2.zero;
-        StartCoroutine(C_BlinkOutAfterDeath());
     }
 
-    private IEnumerator C_BlinkOutAfterDeath()
+    protected IEnumerator C_BlinkOut()
     {
         yield return new WaitUntil(() => Grounded);
         yield return new WaitForSeconds(2.0f);

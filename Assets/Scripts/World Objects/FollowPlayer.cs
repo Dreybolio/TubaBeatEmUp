@@ -126,8 +126,8 @@ public class FollowPlayer : MonoBehaviour
         AlignBoxCollider(leftWall, a, b, c, d, 0.5f);
 
         // -- RIGHT WALL -- //
-        a = cam.ViewportToWorldPoint(new Vector3(1, nearYSample, nearZSample)); a.Set(a.x - xOffset, transform.position.y - edgeCollidersHeight / 2f, a.z);
-        b = cam.ViewportToWorldPoint(new Vector3(1, farYSample, farZSample)); b.Set(b.x - xOffset, transform.position.y - edgeCollidersHeight / 2f, b.z);
+        a = cam.ViewportToWorldPoint(new Vector3(1, nearYSample, nearZSample)); a.Set(a.x + xOffset, transform.position.y - edgeCollidersHeight / 2f, a.z);
+        b = cam.ViewportToWorldPoint(new Vector3(1, farYSample, farZSample)); b.Set(b.x + xOffset, transform.position.y - edgeCollidersHeight / 2f, b.z);
         c = new Vector3(b.x, transform.position.y + edgeCollidersHeight / 2f, b.z);
         d = new Vector3(a.x, transform.position.y + edgeCollidersHeight / 2f, a.z);
 

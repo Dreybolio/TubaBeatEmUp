@@ -66,7 +66,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bea067a46d97ab04fa671f42e10b67ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _character: {fileID: 0}
+  _character: {fileID: 6144980914151299805}
 --- !u!1 &1707703840739589374
 GameObject:
   m_ObjectHideFlags: 0
@@ -224,8 +224,10 @@ MonoBehaviour:
   specialMagicRegenCooldown: 0.75
   specialDistance: 1
   specialDamage: 2
-  specialKnockbackForce: 1.1
   specialAirborneKnockbackForce: 1.4
+  specialSpeed: 4.5
+  specialAccerlation: 10
+  specialTurnClamp: 1
   specialSpinRef: {fileID: 4528588250642034781}
   dashSpecialMagicCost: 60
   dashSpecialMagicRegenCooldown: 0.75

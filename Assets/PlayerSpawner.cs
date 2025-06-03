@@ -10,7 +10,6 @@ public class PlayerSpawner : MonoBehaviour
     {
         PlayerSpawnPoint[] spawns = FindObjectsByType<PlayerSpawnPoint>(FindObjectsSortMode.None);
         spawnPoints = spawns.OrderBy(s => s.PlayerID).ToList();
-        print($"Located Spawnpoints: {spawns}");
     }
     public void SpawnPlayers()
     {
@@ -18,7 +17,7 @@ public class PlayerSpawner : MonoBehaviour
         foreach (var player in PlayerManager.Instance.Players)
         {
             Vector3 spawnPoint = spawnPoints[i].transform.position;
-            PlayerController physicalPlayer = player.SpawnPhysicalPlayer();
+            PlayerController physicalPlayer = player.SpawnPlayerController();
             if (physicalPlayer != null)
             {
                 physicalPlayer.transform.position = spawnPoint;

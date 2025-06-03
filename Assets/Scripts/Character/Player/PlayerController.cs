@@ -31,6 +31,9 @@ public abstract class PlayerController : Character
     [SerializeField] private float drillMagicRegenCooldown = 0.75f;
     // Note: Drill uses same damage stat as Heavy Attack
 
+    [Header("Actions - Spin")]
+    [SerializeField] private float spinDamageMult = 1.5f;
+
     [Header("Magic Stats")]
     public float MaxMagic;
     [SerializeField] private float magicRegenRate = 1.0f;
@@ -397,6 +400,7 @@ public abstract class PlayerController : Character
         model.Animator.SetInteger(_animActionID_I, (int)ActionType.ATTACK_SPIN);
         _hasMovement = false;
         _canBeHit = false;
+        _damageMult = spinDamageMult; 
         // Do dash speeds as this happens
         _speed = _facingRight ? new(dashSpeed, 0) : new(-dashSpeed, 0);
         // Revert variables when done
@@ -411,6 +415,7 @@ public abstract class PlayerController : Character
         _speed = Vector2.zero;
         _hasMovement = true;
         _canBeHit = true;
+        _damageMult = 1.0f;
     }
     #endregion
 
@@ -451,6 +456,12 @@ public abstract class PlayerController : Character
         PauseMagicRegenForTime(drillMagicRegenCooldown);
     }
     #endregion
+
+    private int CalculateDamage(int baseAmt)
+    {
+        // TODO: Add levelling damage increase
+        return Mathf.CeilToInt(baseAmt * _damageMult);
+    }
     /*
      *  Triggered by Animation System during light attack swing animation
      */
@@ -459,7 +470,7 @@ public abstract class PlayerController : Character
         List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(forwardXPoint.position, transform.right * transform.localScale.x, lightAttackDistance);
         foreach (var c in hits)
         {
-            bool killedEnemy = c.Key.Character.Damage(lightAttackDamage, c.Value);
+            bool killedEnemy = c.Key.Character.Damage(CalculateDamage(lightAttackDamage), c.Value);
             if (!c.Key.Character.Grounded || killedEnemy || _attacksAlwaysKnockback)
             {
                 c.Key.Character.Knockback(_facingRight, lightAttackAirborneKnockbackForce);
@@ -469,7 +480,7 @@ public abstract class PlayerController : Character
                 // Character Grounded and we didn't kill them. Apply small stun
                 c.Key.Character.HurtStun();
             }
-            Debug.Log("Character " + name + " has hit Character " + c.Key.Character.name + " for " + lightAttackDamage + " damage.");
+            // Debug.Log("Character " + name + " has hit Character " + c.Key.Character.name + " for " + lightAttackDamage + " damage.");
         }
     }
 
@@ -488,7 +499,7 @@ public abstract class PlayerController : Character
         }
         foreach (var c in hits)
         {
-            bool killedEnemy = c.Key.Character.Damage(heavyAttackDamage, c.Value);
+            bool killedEnemy = c.Key.Character.Damage(CalculateDamage(heavyAttackDamage), c.Value);
             if (!c.Key.Character.Grounded)
             {
                 c.Key.Character.Knockback(_facingRight, heavyAttackAirborneKnockbackForce * (didDoubleHeavy ? 1 : -1)); // Single Heavy knocks downwards
@@ -503,7 +514,7 @@ public abstract class PlayerController : Character
                 // Character grounded, not dead, and we're not doing a combo. Small stun.
                 c.Key.Character.HurtStun();
             }
-            Debug.Log("Character " + name + " has hit Character " + c.Key.Character.name + " for " + heavyAttackDamage + " damage.");
+            // Debug.Log("Character " + name + " has hit Character " + c.Key.Character.name + " for " + heavyAttackDamage + " damage.");
         }
     }
 

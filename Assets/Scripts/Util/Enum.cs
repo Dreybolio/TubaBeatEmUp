@@ -26,6 +26,7 @@ public enum AI_Action
 
 public enum AI_Action_Override
 {
+    NONE,
     CHANGEROLE_OFFENSE
 }
 

@@ -16,7 +16,8 @@ public class Player : MonoBehaviour {
 
     // Assigned Data at runtime
     [NonSerialized] public CharacterData CharacterData;
-    
+    [NonSerialized] public PlayerController Controller;
+
     // Variables
     private Vector2 _moveInput = Vector2.zero;
     private bool _jumpInput = false;
@@ -45,14 +46,24 @@ public class Player : MonoBehaviour {
     /*
      *  Player Spawning
      */
-    public PlayerController SpawnPhysicalPlayer()
+    public PlayerController SpawnPlayerController()
     {
         if (CharacterData != null)
         {
-            PlayerController controller = Instantiate((PlayerController)CharacterData.spawnablePrefab);
-            controller.AssignPlayer(this);
-            return controller;
+            if (Controller == null)
+            {
+                Controller = Instantiate((PlayerController)CharacterData.spawnablePrefab);
+                Controller.name = $"{name} Controller";
+                Controller.AssignPlayer(this);
+                return Controller;
+            }
+            else
+            {
+                Debug.LogError($"{name}: Tried to spawn a physical player when one already exists");
+                return null;
+            }
         }
+        Debug.LogError($"{name}: Tried to spawn a physical player with no data");
         return null;
     }
 
@@ -112,7 +123,6 @@ public class Player : MonoBehaviour {
         if (ctx.performed && _uiNavigateCancel)
         {
             Vector2 navigate = ctx.ReadValue<Vector2>();
-            print(navigate);
             _uiNavigateCancel = false;
             OnUINavigate?.Invoke(navigate);
         }

@@ -1,10 +1,11 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 using static UnityEngine.GraphicsBuffer;
 
 public class GameOverListener : Singleton<GameOverListener>
 {
-    [SerializeField] private Character[] charactersListenForDeath;
+    private Character[] charactersListenForDeath;
     public UnityEvent OnGameOver;
     private int _numCharacters;
     private int _numDeaths = 0;
@@ -15,7 +16,7 @@ public class GameOverListener : Singleton<GameOverListener>
         if (_numDeaths == _numCharacters)
         {
             // Everyone has died.
-            OnGameOver?.Invoke();
+            StartCoroutine(C_GameOver());
         }
     }
     public void SearchForTargets()
@@ -26,5 +27,11 @@ public class GameOverListener : Singleton<GameOverListener>
         {
             c.OnDeath += IncrementDeaths;
         }
+    }
+
+    private IEnumerator C_GameOver()
+    {
+        yield return new WaitForSeconds(2f);
+        OnGameOver?.Invoke();
     }
 }
