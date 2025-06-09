@@ -87,18 +87,19 @@ public class PlayerClassBarbarian : PlayerController
                 timer += Time.deltaTime;
                 yield return null;
             }
-        }
-        // Reached jump apex, pause midair for a few frames
+            // Reached jump apex, pause midair for a few frames
 
-        timer = 0f;
-        while (timer < 0.1f)
-        {
-            _verticalVelocity = Mathf.Lerp(_verticalVelocity, 0, Time.deltaTime * _specialAccel); 
-            timer += Time.deltaTime;
-            yield return null;
+            timer = 0f;
+            while (timer < 0.1f)
+            {
+                _verticalVelocity = Mathf.Lerp(_verticalVelocity, 0, Time.deltaTime * _specialAccel); 
+                timer += Time.deltaTime;
+                yield return null;
+            }
+            // Slam down
+            model.Animator.ResetTrigger(_animSpecialRise_T);
         }
-        // Slam down
-        model.Animator.ResetTrigger(_animSpecialRise_T);
+
         model.Animator.SetTrigger(_animSpecialSlam_T);
         timer = 0f;
         do

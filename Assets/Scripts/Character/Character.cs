@@ -42,11 +42,13 @@ public abstract class Character : MonoBehaviour
     // Events
     public delegate void CharacterEvent();
     public event CharacterEvent OnDeath;
+    public event CharacterEvent OnRevive;
     public event CharacterEvent OnLoseControl;
     public event CharacterEvent OnHurtStun;
 
-    public delegate void CharacterEventInt(int i);
-    public event CharacterEventInt OnHurt;
+    public delegate void CharacterEventVal<T>(T i);
+    public event CharacterEventVal<int> OnHurt;
+    public event CharacterEventVal<int> OnHeal;
 
 
     // Pointers
@@ -239,10 +241,35 @@ public abstract class Character : MonoBehaviour
         OnHurt?.Invoke(amount);
         if (Health <= 0)
         {
+            Health = 0;
             Die();
             return true;
         }
         return false;
+    }
+
+    public void Heal(int amount)
+    {
+        bool revived = Health <= 0;
+        Health += amount;
+        if (Health > MaxHealth)
+        {
+            Health = MaxHealth;
+        }
+        // Spawn a particle
+        ParticleNumber particle = Instantiate(prefabParticleNum, transform.position, Quaternion.identity);
+        particle.SetText(amount.ToString());
+        SoundManager.Instance.PlaySound(sndHurt, 0.7f, true);
+        OnHeal?.Invoke(amount);
+
+        if (revived)
+        {
+            OnRevive?.Invoke();
+            model.Animator.SetTrigger(_animEndProne_T);
+            model.Animator.ResetTrigger(_animProne_T);
+            _hasControl = true;
+            _canBeHit = true;
+        }
     }
 
     public void Die()

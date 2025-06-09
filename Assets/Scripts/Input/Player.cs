@@ -1,16 +1,23 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static Player;
 
 public class Player : MonoBehaviour {
-    public delegate void PlayerActionEvent(ActionType type);
-    public event PlayerActionEvent OnPlayerAction;
+    public delegate void PlayerEventVal<T>(T val);
+    public event PlayerEventVal<ActionType> OnPlayerAction;
+    public event PlayerEventVal<Player> OnInteract;
+    public event PlayerEventVal<Player> OnInteractEnd;
+    public event PlayerEventVal<Player> OnCancel;
+    public event PlayerEventVal<Player> OnCancelEnd;
 
-    public delegate void UINavigateEvent(Vector2 vec);
     public delegate void UIEvent();
-    public event UINavigateEvent OnUINavigate;
+    public delegate void UIEventVal<T>(T val);
+    public event UIEventVal<Vector2> OnUINavigate;
     public event UIEvent OnUIConfirm;
+    public event UIEventVal<Player> OnUIConfirmPlayer;
     public event UIEvent OnUICancel;
+    public event UIEventVal<Player> OnUICancelPlayer;
 
     private PlayerInput input;
 
@@ -76,25 +83,50 @@ public class Player : MonoBehaviour {
     }
     public void Jump(InputAction.CallbackContext ctx)
     {
+        if (Time.timeScale == 0) return;
         if (ctx.started) _jumpInput = true;
         if (ctx.canceled) _jumpCancelled = true;
         print($"Input: {_jumpInput}, Cancelled: {_jumpCancelled}");
     }
     public void LightAttack(InputAction.CallbackContext ctx)
     {
+        if (Time.timeScale == 0) return;
         if (ctx.performed) OnPlayerAction?.Invoke(ActionType.ATTACK_LIGHT);
     }
     public void HeavyAttack(InputAction.CallbackContext ctx)
     {
+        if (Time.timeScale == 0) return;
         if (ctx.performed) OnPlayerAction?.Invoke(ActionType.ATTACK_HEAVY);
     }
     public void Special(InputAction.CallbackContext ctx)
     {
+        if (Time.timeScale == 0) return;
         if (ctx.performed) OnPlayerAction?.Invoke(ActionType.SPECIAL);
     }
     public void Dash(InputAction.CallbackContext ctx)
     {
+        if (Time.timeScale == 0) return;
         if (ctx.performed) OnPlayerAction?.Invoke(ActionType.DASH);
+    }
+    public void Interact(InputAction.CallbackContext ctx)
+    {
+        if (Time.timeScale == 0) return;
+        if (ctx.performed) OnInteract?.Invoke(this);
+        if (ctx.canceled) OnInteractEnd?.Invoke(this);
+    }
+    public void Cancel(InputAction.CallbackContext ctx)
+    {
+        if (Time.timeScale == 0) return;
+        if (ctx.performed) OnCancel?.Invoke(this);
+        if (ctx.canceled) OnCancelEnd?.Invoke(this);
+    }
+
+    /*
+     *  Developer 
+     */
+    public void ToggleConsole(InputAction.CallbackContext ctx)
+    {
+        if (ctx.performed) DeveloperConsole.Instance.Toggle();
     }
 
     //Getters
@@ -133,10 +165,18 @@ public class Player : MonoBehaviour {
     }
     public void UIConfirm(InputAction.CallbackContext ctx)
     {
-        if (ctx.performed) OnUIConfirm?.Invoke();
+        if (ctx.performed)
+        {
+            OnUIConfirm?.Invoke();
+            OnUIConfirmPlayer?.Invoke(this);
+        }
     }
     public void UICancel(InputAction.CallbackContext ctx)
     {
-        if (ctx.performed) OnUICancel?.Invoke();
+        if (ctx.performed) 
+        { 
+            OnUICancel?.Invoke();
+            OnUICancelPlayer?.Invoke(this);
+        }
     }
 }

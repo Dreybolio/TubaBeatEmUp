@@ -19,6 +19,12 @@ public class GameOverListener : Singleton<GameOverListener>
             StartCoroutine(C_GameOver());
         }
     }
+    private void DecrementDeaths()
+    {
+        _numDeaths--;
+        if (_numDeaths < 0)
+            _numDeaths = 0;
+    }
     public void SearchForTargets()
     {
         charactersListenForDeath = FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
@@ -26,6 +32,7 @@ public class GameOverListener : Singleton<GameOverListener>
         foreach (var c in charactersListenForDeath)
         {
             c.OnDeath += IncrementDeaths;
+            c.OnRevive += DecrementDeaths;
         }
     }
 

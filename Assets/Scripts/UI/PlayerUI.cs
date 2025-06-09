@@ -10,6 +10,17 @@ public class PlayerUI : MonoBehaviour
     [SerializeField] private Slider magicSlider;
     [SerializeField] private Image playerIcon;
 
+    PlayerController _player;
+
+    private void OnDisable()
+    {
+        if (_player != null)
+        {
+            _player.OnHurt -= HealthChange;
+            _player.OnHeal -= HealthChange;
+            _player.OnMagicChanged -= MagicChange;
+        }
+    }
     public void SetHealth(float percent)
     {
         healthSlider.value = percent;
@@ -20,8 +31,20 @@ public class PlayerUI : MonoBehaviour
     }
     public void Initialize(PlayerController player)
     {
+        _player = player;
         playerIcon.sprite = player.Icon;
-        player.OnHurt += _ => SetHealth(player.Health / (float)player.MaxHealth);
-        player.OnMagicChanged += () => SetMagic(player.Magic / player.MaxMagic);
+        player.OnHurt += HealthChange;
+        player.OnHeal += HealthChange;
+        player.OnMagicChanged += MagicChange;
+    }
+
+    public void HealthChange(int _)
+    {
+        SetHealth(_player.Health / (float)_player.MaxHealth);
+    }
+
+    public void MagicChange(float _) 
+    {
+        SetMagic(_player.Magic / _player.MaxMagic);
     }
 }

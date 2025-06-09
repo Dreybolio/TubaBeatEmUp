@@ -216,18 +216,22 @@ MonoBehaviour:
   dashJumpHeight: 1.65
   drillMagicCost: 55
   drillMagicRegenCooldown: 0.75
+  spinDamageMult: 1.5
   MaxMagic: 100
   magicRegenRate: 1
   sndSpecial: {fileID: 0}
   Icon: {fileID: 759965487, guid: 07243dcd721647e40ab1dc36777878b0, type: 3}
+  reviveMinigame: {fileID: 2901103612801966216, guid: 5fa27584e8f61ae42adf8809c0adfd7f, type: 3}
   specialMagicCost: 60
   specialMagicRegenCooldown: 0.75
   specialDistance: 1
   specialDamage: 2
   specialAirborneKnockbackForce: 1.4
-  specialSpeed: 4.5
-  specialAccerlation: 10
-  specialTurnClamp: 1
+  specialSpeedAtMin: 3
+  specialSpeedAtMax: 7
+  specialTimeToMaxSpeed: 1
+  specialAccerlation: 50
+  specialTurnClamp: 500
   specialSpinRef: {fileID: 4528588250642034781}
   dashSpecialMagicCost: 60
   dashSpecialMagicRegenCooldown: 0.75

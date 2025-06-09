@@ -56,7 +56,9 @@ public class EnemyManager : Singleton<EnemyManager>
             .Where(p => p.Controller.Health > 0)
             .Select(p => p.Controller)
             .ToList();
-        Debug.Log($"Valid Targets: {targets.Count}");
+
+        if (targets.Count == 0)
+            return;
 
         // Before assigning roles, try to balance player targets amongst this squad.
         // Assume that unless a target is overrepresented in this squad, we don't need to rearrange
@@ -71,7 +73,6 @@ public class EnemyManager : Singleton<EnemyManager>
 
         if (hasNull || (Mathf.Abs(mostCommonTarget - leastCommonTarget) > 1))
         {
-            Debug.Log("Rebalancing Targets");
             // Make a dictionary with each character assigned to their current targets
             var targetGroups = squad
                 .Where(c => c.Target != null && targets.Contains(c.Target) && !targetOverrides.ContainsKey(c))    // <-- Don't allow overrides into this initial list

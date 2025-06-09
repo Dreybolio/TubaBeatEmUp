@@ -232,7 +232,7 @@ public class AIBehaviours : MonoBehaviour
             }
             else
             {
-                // Still waiting for timeout.
+                // Still waiting for timeout. Start pressuring players
                 return new AI_Decision { action = AI_Action.IDLE };
             }
         }

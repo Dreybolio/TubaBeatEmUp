@@ -23,10 +23,22 @@ public class PlayerSelectorManager : MonoBehaviour
     {
         PlayerManager.Instance.OnPlayerJoin -= AssignPlayerToSlot;
         PlayerManager.Instance.OnPlayerLeft -= RemovePlayerFromSlot;
+        foreach (Player p in PlayerManager.Instance.Players)
+        {
+            p.OnUIConfirmPlayer -= AssignPlayerToSlot;
+        }
     }
 
     private void Start()
     {
+        foreach (Player p in PlayerManager.Instance.Players)
+        {
+            // Unassign all current player values if returning, as they should assume to start null
+            p.CharacterData = null;
+            // Scan for existing players in game and allow them to join without PlayerManager's OnPlayerJoin
+            p.OnUIConfirmPlayer += AssignPlayerToSlot;
+        }
+
         for (int i = 0; i < playerSelectors.Length; i++)
         {
             playerSelectors[i].AwaitConnection();
@@ -36,6 +48,7 @@ public class PlayerSelectorManager : MonoBehaviour
         {
             unlockedCharacters.AddLast(cha);
         }
+
     }
 
     public void AssignPlayerToSlot(Player player)
@@ -47,6 +60,7 @@ public class PlayerSelectorManager : MonoBehaviour
                 // Get the first unselected character
                 playerSelectors[i].SetAsSelected(GetNextCharacter(unlockedCharacters.Last.Value));
                 playerSelectors[i].ConnectPlayer(player);
+                player.OnUIConfirmPlayer -= AssignPlayerToSlot;
                 break;
             }
         }
@@ -58,6 +72,7 @@ public class PlayerSelectorManager : MonoBehaviour
             if (playerSelectors[i].Player == player)
             {
                 playerSelectors[i].AwaitConnection();
+                player.OnUIConfirmPlayer += AssignPlayerToSlot;
                 break;
             }
         }

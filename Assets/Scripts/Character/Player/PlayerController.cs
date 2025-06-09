@@ -44,12 +44,15 @@ public abstract class PlayerController : Character
     [Header("Player Icons")]
     public Sprite Icon;
 
+    [Header("Prefabs")]
+    [SerializeField] private RevivePlayer reviveMinigame;
+
     // Pointers assigned at runtime
     [NonSerialized] public Player Player;
 
     // Events
+    public event CharacterEventVal<float> OnMagicChanged;
     public event CharacterEvent OnUseMagic;
-    public event CharacterEvent OnMagicChanged;
     protected event CharacterEvent OnActionFinished;
 
     // Public Vars
@@ -69,7 +72,7 @@ public abstract class PlayerController : Character
     protected float _maxSpeed;
 
     // Anim
-    protected int _animActionID_I, _animCancelAction_T;
+    protected int _animActionID_I, _animCancelAction_T, _animRevive_T;
 
     protected void ControllerInit()
     {
@@ -93,6 +96,7 @@ public abstract class PlayerController : Character
 
         // Establish events with oneself
         OnLoseControl += CancelAction;
+        OnDeath += PlayerDeath;
     }
     private void OnDisable()
     {
@@ -106,6 +110,7 @@ public abstract class PlayerController : Character
 
         // Unsubscribe from events with oneself
         OnLoseControl -= CancelAction;
+        OnDeath -= PlayerDeath;
     }
 
     private void Update()
@@ -523,6 +528,7 @@ public abstract class PlayerController : Character
         _actionAnimFinished = true;
         OnActionFinished?.Invoke();
     }
+
     protected bool SpendMagicOnAction(float cost)
     {
         if (Magic < cost)
@@ -534,7 +540,7 @@ public abstract class PlayerController : Character
         else
         {
             Magic -= cost;
-            OnMagicChanged?.Invoke();
+            OnMagicChanged?.Invoke(Magic);
             return true;
         }
     }
@@ -548,12 +554,53 @@ public abstract class PlayerController : Character
     {
         Magic += magicRegenRate + Time.deltaTime;
         if (Magic > MaxMagic) Magic = MaxMagic;
-        OnMagicChanged?.Invoke();
+        OnMagicChanged?.Invoke(Magic);
+    }
+
+    private void PlayerDeath()
+    {
+        if (PlayerManager.Instance.Players.Count > 1)
+        {
+            StartCoroutine(C_SpawnReviveMinigame());
+        }
+    }
+
+    public void SetReviveAnim(bool b)
+    {
+        if (b)
+        {
+            AnimatorOverrideSetEnabled(true);
+            model.Animator.SetTrigger(_animRevive_T);
+            _speed = new(0, 0);
+        }
+        else
+        {
+            model.Animator.ResetTrigger(_animRevive_T);
+            model.Animator.SetTrigger(_animCancelAction_T);
+            AnimatorOverrideSetEnabled(false);
+        }
+        _hasControl = !b;
+        _doFaceMoveDir = !b;
+    }
+
+    private IEnumerator C_SpawnReviveMinigame()
+    {
+        float timer = 0f;
+        while (timer < 2f)
+        {
+            if (Grounded) timer += Time.deltaTime;
+            else timer = 0f;
+            yield return null;
+        }
+
+        RevivePlayer minigame = Instantiate(reviveMinigame, transform);
+        minigame.ReviveTarget = Player;
     }
     
     public void AssignExtraAnimationIDs()
     {
         _animActionID_I = Animator.StringToHash("ActionID");
         _animCancelAction_T = Animator.StringToHash("CancelAction");
+        _animRevive_T = Animator.StringToHash("Revive");
     }
 }

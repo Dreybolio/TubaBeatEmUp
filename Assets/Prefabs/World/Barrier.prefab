@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6868876698240302784}
   - component: {fileID: 8795636449944649772}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Barrier
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -65,7 +65,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5342322019245320282}
   - component: {fileID: 2080181365892834671}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Barrier Icon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -155,7 +155,7 @@ GameObject:
   - component: {fileID: 1377248436790978205}
   - component: {fileID: 1659255823924921639}
   - component: {fileID: 910412835952830241}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Barrier Texture
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -213,12 +213,15 @@ MonoBehaviour:
   dashSpeed: 6
   dashLength: 0.2
   dashCooldown: 0.15
+  dashJumpHeight: 1.65
   drillMagicCost: 55
   drillMagicRegenCooldown: 1.15
+  spinDamageMult: 1.5
   MaxMagic: 100
   magicRegenRate: 1
   sndSpecial: {fileID: 8300000, guid: e4ef28fa8a907714184b15594f7fc74a, type: 3}
   Icon: {fileID: 759965487, guid: 07243dcd721647e40ab1dc36777878b0, type: 3}
+  reviveMinigame: {fileID: 2901103612801966216, guid: 5fa27584e8f61ae42adf8809c0adfd7f, type: 3}
   specialMagicCost: 60
   specialMagicRegenCooldown: 0.75
   specialDistance: 1.25
@@ -233,6 +236,11 @@ MonoBehaviour:
   specialNormalAcceleration: 3
   specialFastAcceleration: 30
   specialCustomGravity: -20
+  dashSpecialMagicCost: 60
+  dashSpecialMagicRegenCooldown: 0.75
+  dashSpecialDistance: 2
+  dashSpecialDamage: 3
+  dashSpecialKnockbackForce: 3
   particleCircleSlashPrefab: {fileID: 6837936505167167141, guid: e2c2b8864cda0b54e89d709e8ff77c2b, type: 3}
 --- !u!143 &3705284323928190345
 CharacterController:

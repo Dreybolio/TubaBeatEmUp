@@ -18,14 +18,14 @@ public class TriggerEncounter : Trigger
     private int _enemiesKilled;
     private void OnEnable()
     {
-        OnTrigger.AddListener(StartEncounter);
+        OnTriggered.AddListener(StartEncounter);
     }
     private void OnDisable()
     {
-        OnTrigger.RemoveListener(StartEncounter);
+        OnTriggered.RemoveListener(StartEncounter);
     }
 
-    private void StartEncounter()
+    private void StartEncounter(GameObject _)
     {
         foreach (var enemy in dynamicScaleEnemies)
         {

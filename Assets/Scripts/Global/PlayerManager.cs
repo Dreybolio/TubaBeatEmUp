@@ -12,6 +12,7 @@ public class PlayerManager : Singleton<PlayerManager>
 
     PlayerInputManager inputManager;
     [NonSerialized] public List<Player> Players = new();
+
     private void Awake()
     {
         inputManager = GetComponent<PlayerInputManager>();
@@ -19,8 +20,10 @@ public class PlayerManager : Singleton<PlayerManager>
 
     public void PlayerJoin(PlayerInput playerInput)
     {
+        if (playerInput == null) return;
         if (Players.Count > 4) return;
         Player player = playerInput.GetComponent<Player>();
+        print(playerInput.name);
         player.gameObject.name = $"Player {Players.Count}";
         Debug.Log($"Player {player.gameObject.name} with settings {playerInput.user} has joined the game.");
         Players.Add(player);
@@ -29,6 +32,7 @@ public class PlayerManager : Singleton<PlayerManager>
 
     public void PlayerLeft(PlayerInput playerInput)
     {
+        if (playerInput == null) return;
         Player player = playerInput.GetComponent<Player>();
         Debug.Log($"Player {player.gameObject.name} with settings {playerInput.user} has left the game.");
         Players.Remove(player);

@@ -13,7 +13,9 @@ public class PlayerClassRogue: PlayerController
     [SerializeField] private float specialAirborneKnockbackForce = 1.4f;
 
     [Header("Special - Movement Stats")]
-    [SerializeField] private float specialSpeed = 4.5f;
+    [SerializeField] private float specialSpeedAtMin = 4.5f;
+    [SerializeField] private float specialSpeedAtMax = 6.0f;
+    [SerializeField] private float specialTimeToMaxSpeed = 1.8f;
     [SerializeField] private float specialAccerlation = 10.0f;
     [SerializeField] private float specialTurnClamp = 1.0f;
 
@@ -31,9 +33,11 @@ public class PlayerClassRogue: PlayerController
     [SerializeField] private ParticleObject particleSlashPrefab;
 
     // Vars
+    private float _specialSpeed = 4.5f;
+    private float _specialSpeedTimer = 1.8f;
 
     // Anim
-    protected int _animSpecialTwirl_T;
+    private int _animSpecialTwirl_T;
     void Start()
     {
         AssignClassAnimationIDs();
@@ -94,6 +98,8 @@ public class PlayerClassRogue: PlayerController
         model.AnimListener.OnSpecialHitFrame += HitFramePassed;
         OnLoseControl += PrematureFinish;
         // Do a slash every hit frame. Target 12 slashes
+        _specialSpeed = specialSpeedAtMin;
+        _specialSpeedTimer = 0;
         int i = 0;
         do
         {
@@ -112,6 +118,14 @@ public class PlayerClassRogue: PlayerController
                 hitFramePassed = false;
                 i++;
             }
+            // Increase speed according to timer progress
+            _specialSpeed = Mathf.Lerp(specialSpeedAtMin, specialSpeedAtMax, _specialSpeedTimer / specialTimeToMaxSpeed);
+            Debug.Log($"Special Speed: {_specialSpeed}, Timer at {_specialSpeedTimer}");
+            if (_specialSpeedTimer < specialTimeToMaxSpeed)
+            {
+                _specialSpeedTimer += Time.deltaTime;
+            }
+
             yield return null;
         }
         while (i < 12);
@@ -168,15 +182,28 @@ public class PlayerClassRogue: PlayerController
     {
         // Move function that uses internal values.
         // Have slipperier acceleration and don't allow direction changing beyond a threshold
-        Vector2 targetVector = moveInput * specialSpeed;
+        Vector2 targetVector = moveInput * _specialSpeed;
         Vector2 currentVector = new(controller.velocity.x, controller.velocity.z);
+        if (targetVector != Vector2.zero)
+        {
+            // Clamp targetVector such that you may only rotate by a certain clamped value
+            Vector2 targetDir = targetVector.normalized;
+            Vector2 currDir = currentVector.normalized;
+
+            float angle = Vector2.SignedAngle(currDir, targetDir);
+            float maxStep = specialTurnClamp * Time.deltaTime;  // Max rotation per frame
+            float turnAngle = Mathf.Clamp(angle, -maxStep, maxStep);
+            Vector2 newDir = Quaternion.Euler(0, 0, turnAngle) * currDir; // Rotate as much as the maxStep and add that to the current direciton
+            Debug.Log($"New Dir: {newDir}, Turning Angle: {turnAngle}");
+            targetVector = newDir * targetVector.magnitude;
+        }
         if (_hasControl)
         {
             // Set goal speed
             if (Vector2.Distance(currentVector, targetVector) < -0.1f || Vector2.Distance(currentVector, targetVector) > 0.1f)
             {
                 _speed = Vector2.Lerp(currentVector, targetVector, Time.deltaTime * specialAccerlation);
-                _speed = Vector2.ClampMagnitude(_speed, specialSpeed);
+                _speed = Vector2.ClampMagnitude(_speed, _specialSpeed);
                 _speed.Set(Mathf.Round(_speed.x * 1000f) / 1000f, Mathf.Round(_speed.y * 1000f) / 1000f);
             }
             else
