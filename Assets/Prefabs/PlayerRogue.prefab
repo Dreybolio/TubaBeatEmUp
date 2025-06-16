@@ -236,8 +236,9 @@ MonoBehaviour:
   dashSpecialMagicCost: 60
   dashSpecialMagicRegenCooldown: 0.75
   dashSpecialDistance: 2
-  dashSpecialDamage: 3
-  dashSpecialKnockbackForce: 3
+  dashSpecialDamage: 1
+  dashSpecialAirborneKnockbackForce: 1.4
+  dashSpecialSpeed: 6
   particleSlashPrefab: {fileID: 4306160628383777719, guid: 2dc81a2262b2b244495a9eca44dc67e1, type: 3}
 --- !u!143 &3705284323928190345
 CharacterController:

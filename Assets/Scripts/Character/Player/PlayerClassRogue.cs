@@ -25,9 +25,13 @@ public class PlayerClassRogue: PlayerController
     [Header("Dash Special - Attack Stats")]
     [SerializeField] private float dashSpecialMagicCost = 60.0f;
     [SerializeField] private float dashSpecialMagicRegenCooldown = 0.75f;
-    [SerializeField] private float dashSpecialDistance = 2.0f;
+    [SerializeField] private float dashSpecialDistance = 1.0f;
     [SerializeField] private int dashSpecialDamage = 3;
-    [SerializeField] private float dashSpecialKnockbackForce = 3.0f;
+    [SerializeField] private float dashSpecialAirborneKnockbackForce = 1.4f;
+    [SerializeField] private float dashSpecialDazedDuration = 4f;
+
+    [Header("Dash Special - Movement Stats")]
+    [SerializeField] private float dashSpecialSpeed = 6.0f;
 
     [Header("Particles")]
     [SerializeField] private ParticleObject particleSlashPrefab;
@@ -37,7 +41,7 @@ public class PlayerClassRogue: PlayerController
     private float _specialSpeedTimer = 1.8f;
 
     // Anim
-    private int _animSpecialTwirl_T;
+    private int _animSpecialTwirl_T, _animSpecialSlide_T;
     void Start()
     {
         AssignClassAnimationIDs();
@@ -67,6 +71,7 @@ public class PlayerClassRogue: PlayerController
         // Use the override controller
         AnimatorOverrideSetEnabled(true);
         OverrideMove(SpecialMove);
+        model.Animator.ResetTrigger(_animCancelAction_T);
         model.Animator.SetTrigger(_animSpecialTwirl_T);
         _doMagicRegen = false;
 
@@ -76,16 +81,21 @@ public class PlayerClassRogue: PlayerController
         bool prematureFinish = false;
         void PrematureFinish()
         {
+            if (prematureFinish) return; // Don't ever do this twice
+            Debug.Log("Rogue: Premature Finish of Special");
             // Unsub from events now 
+            model.AnimListener.OnEvent01 -= AnimFinished;
             model.AnimListener.OnSpecialHitFrame -= HitFramePassed;
             OnLoseControl -= PrematureFinish;
-            model.AnimListener.OnEvent01 -= AnimFinished;
+            OnActionFinished -= PrematureFinish;
 
-            // Reset vars
+            // Reset Variables
             _doMagicRegen = true;
             _doFaceMoveDir = true;
             _allowJump = true;
             model.Animator.ResetTrigger(_animSpecialTwirl_T);
+            model.Animator.SetTrigger(_animCancelAction_T);
+            OverrideMove(null);
             PauseMagicRegenForTime(specialMagicRegenCooldown);
             AnimatorOverrideSetEnabled(false);
             ActionAnimFinished();
@@ -97,9 +107,13 @@ public class PlayerClassRogue: PlayerController
 
         model.AnimListener.OnSpecialHitFrame += HitFramePassed;
         OnLoseControl += PrematureFinish;
+        OnActionFinished += PrematureFinish;
         // Do a slash every hit frame. Target 12 slashes
         _specialSpeed = specialSpeedAtMin;
         _specialSpeedTimer = 0;
+
+        float panicTimer = 5f;
+
         int i = 0;
         do
         {
@@ -112,19 +126,22 @@ public class PlayerClassRogue: PlayerController
                 dir.Normalize();
                 SpecialHitFrame(dir);
                 Vector3 particleSpawn = transform.position + dir + transform.up * 0.5f;
-                print($"Rot: {Mathf.Rad2Deg * specialSpinRef.transform.rotation.y}");
                 ParticleObject particle = Instantiate(particleSlashPrefab, particleSpawn, Quaternion.identity);
                 particle.transform.right = dir;
                 hitFramePassed = false;
+                panicTimer = 5f;
                 i++;
             }
             // Increase speed according to timer progress
             _specialSpeed = Mathf.Lerp(specialSpeedAtMin, specialSpeedAtMax, _specialSpeedTimer / specialTimeToMaxSpeed);
-            Debug.Log($"Special Speed: {_specialSpeed}, Timer at {_specialSpeedTimer}");
             if (_specialSpeedTimer < specialTimeToMaxSpeed)
             {
                 _specialSpeedTimer += Time.deltaTime;
             }
+
+            // If something goes horribly wrong, this will at least prevent a softlock. Hopefully this doesn't happen.
+            panicTimer -= Time.deltaTime;
+            if (panicTimer < 0) PrematureFinish();
 
             yield return null;
         }
@@ -135,9 +152,12 @@ public class PlayerClassRogue: PlayerController
 
         model.AnimListener.OnEvent01 += AnimFinished;
         // NOTE TO SELF: A WaitUntil() doesn't work here because it needs to be interruptable.
+        panicTimer = 5f;
         while (!animFinished)
         {
             if (prematureFinish) yield break;
+            panicTimer -= Time.deltaTime;
+            if (panicTimer < 0) PrematureFinish();
             yield return null;
         }
 
@@ -145,12 +165,14 @@ public class PlayerClassRogue: PlayerController
         model.AnimListener.OnEvent01 -= AnimFinished;
         model.AnimListener.OnSpecialHitFrame -= HitFramePassed;
         OnLoseControl -= PrematureFinish;
+        OnActionFinished -= PrematureFinish;
 
         // Reset Variables
         _doMagicRegen = true;
         _doFaceMoveDir = true;
         _allowJump = true;
         model.Animator.ResetTrigger(_animSpecialTwirl_T);
+        model.Animator.SetTrigger(_animCancelAction_T);
         OverrideMove(null);
         PauseMagicRegenForTime(specialMagicRegenCooldown);
         AnimatorOverrideSetEnabled(false);
@@ -158,7 +180,7 @@ public class PlayerClassRogue: PlayerController
     }
     public void SpecialHitFrame(Vector3 direction)
     {
-        List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(forwardXPoint.position, direction, specialDistance);
+        List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(forwardXPoint.position, direction, dashSpecialDistance);
         foreach (var c in hits)
         {
             bool killedEnemy = c.Key.Character.Damage(specialDamage, c.Value);
@@ -194,21 +216,20 @@ public class PlayerClassRogue: PlayerController
             float maxStep = specialTurnClamp * Time.deltaTime;  // Max rotation per frame
             float turnAngle = Mathf.Clamp(angle, -maxStep, maxStep);
             Vector2 newDir = Quaternion.Euler(0, 0, turnAngle) * currDir; // Rotate as much as the maxStep and add that to the current direciton
-            Debug.Log($"New Dir: {newDir}, Turning Angle: {turnAngle}");
             targetVector = newDir * targetVector.magnitude;
         }
-        if (_hasControl)
+        if (HasControl)
         {
             // Set goal speed
             if (Vector2.Distance(currentVector, targetVector) < -0.1f || Vector2.Distance(currentVector, targetVector) > 0.1f)
             {
-                _speed = Vector2.Lerp(currentVector, targetVector, Time.deltaTime * specialAccerlation);
-                _speed = Vector2.ClampMagnitude(_speed, _specialSpeed);
-                _speed.Set(Mathf.Round(_speed.x * 1000f) / 1000f, Mathf.Round(_speed.y * 1000f) / 1000f);
+                Speed = Vector2.Lerp(currentVector, targetVector, Time.deltaTime * specialAccerlation);
+                Speed = Vector2.ClampMagnitude(Speed, _specialSpeed);
+                Speed.Set(Mathf.Round(Speed.x * 1000f) / 1000f, Mathf.Round(Speed.y * 1000f) / 1000f);
             }
             else
             {
-                _speed = targetVector;
+                Speed = targetVector;
             }
         }
     }
@@ -219,7 +240,19 @@ public class PlayerClassRogue: PlayerController
     {
         if (SpendMagicOnAction(dashSpecialMagicCost))
         {
-            StartCoroutine(C_DashSpecial());
+            model.AnimListener.OnDashSpecialHitFrame += DashSpecialHitFrame;
+            // Because this action is not triggered normally, action type must be set here
+            AnimatorOverrideSetEnabled(true);
+            model.Animator.ResetTrigger(_animCancelAction_T);
+            model.Animator.SetTrigger(_animSpecialSlide_T);
+            // Stop movement during a heavy attack
+            _hasMovement = false;
+            _canBeHit = false;
+            _doMagicRegen = false;
+            // Do dash speeds as this happens
+            Speed = _facingRight ? new(dashSpecialSpeed, 0) : new(-dashSpecialSpeed, 0);
+            // Revert variables when done
+            OnActionFinished += DashSpecialEnd;
         }
         else
         {
@@ -232,11 +265,40 @@ public class PlayerClassRogue: PlayerController
         return Magic >= dashSpecialMagicCost;
     }
 
-    private IEnumerator C_DashSpecial()
+
+    public void DashSpecialEnd()
     {
-        model.Animator.SetTrigger(_animCancelAction_T); // <-- Set a cancel trigger to interrupt the previous dash animation
-        yield return null;
-        ActionAnimFinished();
+        // Stop listening for self
+        OnActionFinished -= DashSpecialEnd;
+        model.AnimListener.OnDashSpecialHitFrame -= DashSpecialHitFrame;
+        // Revert Variables
+        _hasMovement = true;
+        _canBeHit = true;
+        _doMagicRegen = true;
+        model.Animator.ResetTrigger(_animSpecialSlide_T);
+        AnimatorOverrideSetEnabled(false);
+        PauseMagicRegenForTime(dashSpecialMagicRegenCooldown);
+    }
+
+    public void DashSpecialHitFrame()
+    {
+        List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(forwardXPoint.position, transform.right * transform.localScale.x, specialDistance);
+        foreach (var c in hits)
+        {
+            bool killedEnemy = c.Key.Character.Damage(dashSpecialDamage, c.Value);
+            if (!killedEnemy) c.Key.Character.AddStatusEffect(new StatusEffectDazed(dashSpecialDazedDuration));
+            // Apply Status Effect
+            if (!c.Key.Character.Grounded || killedEnemy || _attacksAlwaysKnockback)
+            {
+                c.Key.Character.Knockback(_facingRight, dashSpecialAirborneKnockbackForce);
+            }
+            else
+            {
+                // Character Grounded and we didn't kill them. Apply small stun
+                c.Key.Character.HurtStun();
+            }
+            // Debug.Log("Character " + name + " has hit Character " + c.Key.Character.name + " for " + specialDamage + " damage.");
+        }
     }
     #endregion
 
@@ -244,5 +306,6 @@ public class PlayerClassRogue: PlayerController
     private void AssignClassAnimationIDs()
     {
         _animSpecialTwirl_T = Animator.StringToHash("Override_A");
+        _animSpecialSlide_T = Animator.StringToHash("Override_B");
     }
 }

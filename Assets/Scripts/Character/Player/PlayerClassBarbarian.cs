@@ -66,6 +66,7 @@ public class PlayerClassBarbarian : PlayerController
     {
         // Only use the override layer for animation
         AnimatorOverrideSetEnabled(true);
+        model.Animator.ResetTrigger(_animCancelAction_T);
         model.Animator.SetTrigger(_animSpecialRise_T);
         OverrideJumpGravity(SpecialJumpGravity);
         OverrideMove(SpecialMove);
@@ -117,14 +118,14 @@ public class PlayerClassBarbarian : PlayerController
         Vector3 particleSpawn = new(transform.position.x, transform.position.y + 0.1f, transform.position.z);
         Instantiate(particleCircleSlashPrefab, particleSpawn, Quaternion.identity);
         // Roll out of attack
-        _hasControl = false;
+        HasControl = false;
         model.Animator.ResetTrigger(_animSpecialSlam_T);
         model.Animator.SetTrigger(_animSpecialRollOut_T);
         yield return new WaitForSeconds(0.30f);
         
         // Stop rolling, reset variables
         model.Animator.ResetTrigger(_animSpecialRollOut_T);
-        _hasControl = true;
+        HasControl = true;
 
         // Set a magic regen cooldown
         _doMagicRegen = true;
@@ -172,18 +173,18 @@ public class PlayerClassBarbarian : PlayerController
         // Acceleration goes high when we first jump, and when we first start slamming. Once we touch down, lose all control.
         Vector2 targetVector = moveInput * _specialTargetSpeed;
         Vector2 currentVector = new(controller.velocity.x, controller.velocity.z);
-        if (_hasControl)
+        if (HasControl)
         {
             // Set goal speed
             if (Vector2.Distance(currentVector, targetVector) < -0.1f || Vector2.Distance(currentVector, targetVector) > 0.1f)
             {
-                _speed = Vector2.Lerp(currentVector, targetVector, Time.deltaTime * _specialAccel);
-                _speed = Vector2.ClampMagnitude(_speed, _specialTargetSpeed);
-                _speed.Set(Mathf.Round(_speed.x * 1000f) / 1000f, Mathf.Round(_speed.y * 1000f) / 1000f);
+                Speed = Vector2.Lerp(currentVector, targetVector, Time.deltaTime * _specialAccel);
+                Speed = Vector2.ClampMagnitude(Speed, _specialTargetSpeed);
+                Speed.Set(Mathf.Round(Speed.x * 1000f) / 1000f, Mathf.Round(Speed.y * 1000f) / 1000f);
             }
             else
             {
-                _speed = targetVector;
+                Speed = targetVector;
             }
         }
     }
@@ -192,7 +193,7 @@ public class PlayerClassBarbarian : PlayerController
     private void SpecialApplyVelocity()
     {
         // Apply internal velocity values
-        controller.Move(new Vector3(_speed.x, _verticalVelocity, _speed.y) * Time.deltaTime);
+        controller.Move(new Vector3(Speed.x, _verticalVelocity, Speed.y) * Time.deltaTime);
     }
     #endregion
 
@@ -219,12 +220,13 @@ public class PlayerClassBarbarian : PlayerController
         // Use the override controller
         model.Animator.SetTrigger(_animCancelAction_T); // <-- Set a cancel trigger to interrupt the previous dash animation
         AnimatorOverrideSetEnabled(true);
+        model.Animator.ResetTrigger(_animCancelAction_T);
         model.Animator.SetTrigger(_animSpecialBash_T);
         _doMagicRegen = false;
         _hasMovement = false;
         _canBeHit = false;
         // Do dash speeds as this happens
-        _speed = _facingRight ? new(dashSpeed, 0) : new(-dashSpeed, 0);
+        Speed = _facingRight ? new(dashSpeed, 0) : new(-dashSpeed, 0);
 
         bool hitFramePassed = false;
         void HitFramePassed()
@@ -240,7 +242,7 @@ public class PlayerClassBarbarian : PlayerController
         yield return new WaitUntil(() => Grounded);
 
         // Hit frame passed and grounded, do attack now.
-        _speed = Vector2.zero;
+        Speed = Vector2.zero;
         Vector3 particleSpawn = forwardXPoint.position;
         Instantiate(particleCircleSlashPrefab, particleSpawn, Quaternion.identity);
         DashSpecialHitFrame();
@@ -252,7 +254,7 @@ public class PlayerClassBarbarian : PlayerController
 
         // Reset Variables
         model.Animator.ResetTrigger(_animSpecialBashRecovery_T);
-        _hasControl = true;
+        HasControl = true;
         _doMagicRegen = true;
         _hasMovement = true;
         _canBeHit = true;

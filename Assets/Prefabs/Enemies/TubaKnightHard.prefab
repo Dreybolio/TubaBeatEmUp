@@ -150,7 +150,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b676ce813c6739f45ace9189136efc6c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 1.5
+  walkSpeed: 2
   acceleration: 20
   airAcceleration: 3
   jumpHeight: 1.2
@@ -182,7 +182,7 @@ MonoBehaviour:
   aiDifficulty: 10
   stunImmunityResetTimer: 1
   stunsUntilImmunity: 8
-  squadID: 0
+  SquadID: 0
   comboDoubleLight:
     enabled: 1
     cooldown: 5
@@ -238,6 +238,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _navCornerCutDistance: 0.5
   _navTargetLeniencyThreshold: 0.15
+  _navAvoidEnemiesDistance: 0.35
 --- !u!1 &5628465425160597417
 GameObject:
   m_ObjectHideFlags: 0

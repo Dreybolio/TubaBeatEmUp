@@ -12,7 +12,7 @@ public class ParticleObject : MonoBehaviour
         _animListener.OnEvent01 -= DestroySelf;
     }
 
-    protected void DestroySelf()
+    public void DestroySelf()
     {
         Destroy(gameObject);
     }

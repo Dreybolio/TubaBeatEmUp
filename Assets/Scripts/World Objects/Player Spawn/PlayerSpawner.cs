@@ -6,13 +6,21 @@ using UnityEngine;
 public class PlayerSpawner : MonoBehaviour
 {
     private List<PlayerSpawnPoint> spawnPoints;
+    private PlayerSpawnCutscene cutscene;
     public void LocateSpawnpoints()
     {
         PlayerSpawnPoint[] spawns = FindObjectsByType<PlayerSpawnPoint>(FindObjectsSortMode.None);
         spawnPoints = spawns.OrderBy(s => s.PlayerID).ToList();
+
+        cutscene = FindAnyObjectByType<PlayerSpawnCutscene>();
     }
     public void SpawnPlayers()
     {
+        if (spawnPoints == null || spawnPoints.Count < PlayerManager.Instance.Players.Count)
+        {
+            DeveloperConsole.Log("Error: Could not find enough PlayerSpawns to spawn all players!");
+            return;
+        }
         int i = 0;
         foreach (var player in PlayerManager.Instance.Players)
         {
@@ -23,5 +31,11 @@ public class PlayerSpawner : MonoBehaviour
                 physicalPlayer.transform.position = spawnPoint;
             }
         }
+    }
+
+    public void PlaySpawnCutscene()
+    {
+        if (cutscene == null) return;
+        cutscene.StartCutscene();
     }
 }

@@ -69,7 +69,6 @@ public abstract class PlayerController : Character
     private bool _dashing = false;
     private List<ActionType> _actionHistory = new();
     private Coroutine _actionBufferRoutine;
-    protected float _maxSpeed;
 
     // Anim
     protected int _animActionID_I, _animCancelAction_T, _animRevive_T;
@@ -77,7 +76,7 @@ public abstract class PlayerController : Character
     protected void ControllerInit()
     {
         Magic = MaxMagic;
-        _maxSpeed = speed;
+        TargetSpeed = walkSpeed;
         AssignExtraAnimationIDs();
         GameUI.Instance.AddPlayerUI(this);
         CharacterInit();
@@ -122,8 +121,8 @@ public abstract class PlayerController : Character
             InterruptJump();
         }
         Vector2 moveVec = Player != null ? Player.GetPlayerMovement().normalized : Vector2.zero;
-        Move(moveVec, _maxSpeed);
-        if (_doFaceMoveDir && _hasControl)
+        Move(moveVec, TargetSpeed);
+        if (_doFaceMoveDir && HasControl)
             TurnFaceMoveDir();
         // else, you don't get to choose what direction you face!
         ApplyVelocity();
@@ -148,7 +147,7 @@ public abstract class PlayerController : Character
     }
     public void DoAction(ActionType type)
     {
-        if (!_hasControl) return;
+        if (!HasControl) return;
         if (_currAction == ActionType.NONE)
         {
             // Nothing in buffer, do attack
@@ -234,7 +233,7 @@ public abstract class PlayerController : Character
         model.Animator.SetInteger(_animActionID_I, (int)ActionType.ATTACK_HEAVY);
         // Stop movement during a heavy attack
         _hasMovement = false;
-        if (Grounded) _speed.Set(0, 0); // Stop speed if grounded
+        if (Grounded) Speed.Set(0, 0); // Stop speed if grounded
         OnActionFinished += HeavyAttackEnd;
     }
 
@@ -277,7 +276,7 @@ public abstract class PlayerController : Character
         _doMagicRegen = false;
         _hasMovement = false;
         _canBeHit = false;
-        _speed = _facingRight ? new(dashSpeed, 0) : new(-dashSpeed, 0);
+        Speed = _facingRight ? new(dashSpeed, 0) : new(-dashSpeed, 0);
 
         // For action overrides: Start listening for Player to turn this into
         // ALSO: Stop listening to the normal function for a bit, we don't want to Player buffer here
@@ -390,11 +389,11 @@ public abstract class PlayerController : Character
     private IEnumerator C_DashJump()
     {
         // The actual jump part is handled in the Update loop, this just increases speed until we ground again
-        _maxSpeed = dashSpeed;
+        TargetSpeed = dashSpeed;
         // Wait slightly to allow for liftoff
         yield return new WaitForSeconds(0.25f);
         yield return new WaitUntil(() => Grounded);
-        _maxSpeed = speed;
+        TargetSpeed = walkSpeed;
     }
 
     #region Spin Attack
@@ -407,7 +406,7 @@ public abstract class PlayerController : Character
         _canBeHit = false;
         _damageMult = spinDamageMult; 
         // Do dash speeds as this happens
-        _speed = _facingRight ? new(dashSpeed, 0) : new(-dashSpeed, 0);
+        Speed = _facingRight ? new(dashSpeed, 0) : new(-dashSpeed, 0);
         // Revert variables when done
         OnActionFinished += SpinAttackEnd;
     }
@@ -417,7 +416,7 @@ public abstract class PlayerController : Character
         // Stop listening for self
         OnActionFinished -= SpinAttackEnd;
         // Revert Variables
-        _speed = Vector2.zero;
+        Speed = Vector2.zero;
         _hasMovement = true;
         _canBeHit = true;
         _damageMult = 1.0f;
@@ -439,7 +438,7 @@ public abstract class PlayerController : Character
             _canBeHit = false;
             _doMagicRegen = false;
             // Do dash speeds as this happens
-            _speed = _facingRight ? new(dashSpeed, 0) : new(-dashSpeed, 0);
+            Speed = _facingRight ? new(dashSpeed, 0) : new(-dashSpeed, 0);
             // Revert variables when done
             OnActionFinished += DrillEnd;
         }
@@ -571,7 +570,7 @@ public abstract class PlayerController : Character
         {
             AnimatorOverrideSetEnabled(true);
             model.Animator.SetTrigger(_animRevive_T);
-            _speed = new(0, 0);
+            Speed = new(0, 0);
         }
         else
         {
@@ -579,7 +578,7 @@ public abstract class PlayerController : Character
             model.Animator.SetTrigger(_animCancelAction_T);
             AnimatorOverrideSetEnabled(false);
         }
-        _hasControl = !b;
+        HasControl = !b;
         _doFaceMoveDir = !b;
     }
 

@@ -93,8 +93,8 @@ public class EnemyController : Character
     {
         GroundedCheck();
         JumpAndGravity(false, jumpHeight);
-        Move(_movementInput, speed, false);
-        if (_doFaceMoveDir && _hasControl)
+        Move(_movementInput, TargetSpeed, false);
+        if (_doFaceMoveDir && HasControl)
         {
             if (Target != null)
                 TurnFaceTarget(Target.transform);
@@ -116,6 +116,8 @@ public class EnemyController : Character
             if (combo.timer > 0)
                 combo.timer -= Time.deltaTime;
         }
+
+        TickStatusEffects();
     }
 
     private void FixedUpdate()
@@ -136,10 +138,12 @@ public class EnemyController : Character
             {
                 case AI_Action.IDLE:
                     _movementInput = Vector2.zero;
+                    TargetSpeed = 0;
                     break;
 
                 case AI_Action.ATTACK:
                     _movementInput = Vector2.zero;
+                    TargetSpeed = 0;
                     if (Random.Range(0, 2) == 0)
                         Attack(ActionType.ATTACK_HEAVY);
                     else
@@ -148,6 +152,7 @@ public class EnemyController : Character
 
                 case AI_Action.MOVE:
                     _movementInput = decision.data;
+                    TargetSpeed = walkSpeed;
                     break;
             }
 
@@ -167,7 +172,7 @@ public class EnemyController : Character
 
     public void Attack(ActionType type)
     {
-        if (!_hasControl) return;
+        if (!HasControl) return;
         if (_currAction == ActionType.NONE)
         {
             // Nothing currently being done, do attack
@@ -187,7 +192,7 @@ public class EnemyController : Character
         model.Animator.SetInteger(_animActionID_I, (int)ActionType.ATTACK_HEAVY);
         // Stop movement during a heavy attack
         _hasMovement = false;
-        if (Grounded) _speed.Set(0, 0); // Stop speed if grounded
+        if (Grounded) Speed.Set(0, 0); // Stop speed if grounded
         OnActionFinished += HeavyAttackEnd;
     }
     private void HeavyAttackEnd()
@@ -204,7 +209,7 @@ public class EnemyController : Character
         _hasMovement = false;
         _canBeHit = false;
         // Do dash speeds as this happens
-        _speed = _facingRight ? new(speed, 0) : new(-speed, 0);
+        Speed = _facingRight ? new(walkSpeed, 0) : new(-walkSpeed, 0);
         // Revert variables when done
         OnActionFinished += SpinAttackEnd;
     }
@@ -214,7 +219,7 @@ public class EnemyController : Character
         // Stop listening for self
         OnActionFinished -= SpinAttackEnd;
         // Revert Variables
-        _speed = Vector2.zero;
+        Speed = Vector2.zero;
         _hasMovement = true;
         _canBeHit = true;
     }

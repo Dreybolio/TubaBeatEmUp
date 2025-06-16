@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using static Player;
 
 public class Player : MonoBehaviour {
     public delegate void PlayerEventVal<T>(T val);

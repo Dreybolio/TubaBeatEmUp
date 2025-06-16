@@ -9,7 +9,7 @@ using UnityEngine;
 public abstract class Character : MonoBehaviour
 {
     [Header("Movement Data")]
-    [SerializeField] protected float speed = 3.0f;
+    [SerializeField] protected float walkSpeed = 3.0f;
     [SerializeField] protected float acceleration = 10.0f;
     [SerializeField] protected float airAcceleration = 3.0f;
     [SerializeField] protected float jumpHeight = 1.2f;
@@ -57,6 +57,11 @@ public abstract class Character : MonoBehaviour
     // Public Vars
     public bool Grounded { get; protected set; }
     public int Health { get; protected set; }
+    [NonSerialized] public float TargetSpeed;
+    [NonSerialized] public bool HasControl = true;
+    [NonSerialized] public Vector2 Speed;
+    public float DefaultSpeed => walkSpeed;
+    public List<StatusEffect> StatusEffects { get; private set; }
 
     // Override Functions
     Action<bool, float> jumpGravityOverride;
@@ -64,11 +69,9 @@ public abstract class Character : MonoBehaviour
     Action applyVelocityOverride;
 
     // Vars
-    protected Vector2 _speed;
     protected float _verticalVelocity;
     protected bool _facingRight = true;
     protected readonly float _terminalVelocity = 53.0f;
-    protected bool _hasControl = true;
     protected bool _hasMovement = true;
     protected bool _doFaceMoveDir = true;
     protected bool _allowJump = true;
@@ -88,15 +91,17 @@ public abstract class Character : MonoBehaviour
 
     protected void CharacterInit()
     {
+        StatusEffects = new();
         controller = GetComponent<CharacterController>();
         Health = MaxHealth;
         _animOverrideLayer = model.Animator.GetLayerIndex("Override");
         AssignAnimationIDs();
     }
 
-    protected void OverrideJumpGravity(Action<bool, float> newJumpGrav)
+    public void OverrideJumpGravity(Action<bool, float> newJumpGrav)
     {
         // Call this with null to cancel
+        if (jumpGravityOverride != null) Debug.LogWarning("Warning: Overrided Jump Gravity without clearing the previous override");
         jumpGravityOverride = newJumpGrav;
     }
     protected void JumpAndGravity(bool tryJump, float height)
@@ -116,7 +121,7 @@ public abstract class Character : MonoBehaviour
             {
                 _verticalVelocity = -2f;
             }
-            if (_hasControl && _allowJump && tryJump) // If trying to jump
+            if (HasControl && _allowJump && tryJump) // If trying to jump
             {
                 // the square root of H * -2 * G = how much velocity needed to reach desired height
                 _verticalVelocity = Mathf.Sqrt(height * -2f * gravityScale);
@@ -148,9 +153,10 @@ public abstract class Character : MonoBehaviour
         model.Animator.SetBool(_animGrounded_B, Grounded);
     }
 
-    protected void OverrideMove(Action<Vector2> newMove)
+    public void OverrideMove(Action<Vector2> newMove)
     {
         // Call this with null to cancel
+        if (moveOverride != null) Debug.LogWarning("Warning: Overrided Move without clearing the previous override");
         moveOverride = newMove;
     }
     protected void Move(Vector2 moveInput, float targetSpeed, bool doLerping = true)
@@ -162,37 +168,37 @@ public abstract class Character : MonoBehaviour
         }
         Vector2 targetVector = moveInput * targetSpeed;
         Vector2 currentVector = new(controller.velocity.x, controller.velocity.z);
-        if (_hasControl && _hasMovement)
+        if (HasControl && _hasMovement)
         {
             // Set goal speed
             if (doLerping && (Vector2.Distance(currentVector, targetVector) < -0.1f || Vector2.Distance(currentVector, targetVector) > 0.1f))
             {
-                _speed = Vector2.Lerp(currentVector, targetVector, Time.deltaTime * (Grounded ? acceleration : airAcceleration));
+                Speed = Vector2.Lerp(currentVector, targetVector, Time.deltaTime * (Grounded ? acceleration : airAcceleration));
                 // Clamping is capped far above normal speed limits just to see if funny-ass tech arises
-                _speed = Vector2.ClampMagnitude(_speed, speed * 3);
-                _speed.Set(Mathf.Round(_speed.x * 1000f) / 1000f, Mathf.Round(_speed.y * 1000f) / 1000f);
+                Speed = Vector2.ClampMagnitude(Speed, TargetSpeed * 3);
+                Speed.Set(Mathf.Round(Speed.x * 1000f) / 1000f, Mathf.Round(Speed.y * 1000f) / 1000f);
             }
             else
             {
-                _speed = targetVector;
+                Speed = targetVector;
             }
         }
         //Animation
         // Return 0 - 1 on speed
-        model.Animator.SetFloat(_animSpeed_F, _speed.magnitude / speed);
+        model.Animator.SetFloat(_animSpeed_F, Speed.magnitude / walkSpeed);
         model.Animator.SetFloat(_animVertSpeed_F, _verticalVelocity);
     }
 
     protected void TurnFaceMoveDir()
     {
         // Turn Around if needed
-        if (_facingRight && _speed.x < 0)
+        if (_facingRight && Speed.x < 0)
         {
             _facingRight = false;
             transform.localScale = new Vector3(-1, 1, 1);
             hitbox.transform.localScale = new Vector3(-1, 1, 1);    // invert this too to prevent errors
         }
-        else if (!_facingRight && _speed.x > 0)
+        else if (!_facingRight && Speed.x > 0)
         {
             _facingRight = true;
             transform.localScale = new Vector3(1, 1, 1);
@@ -215,9 +221,10 @@ public abstract class Character : MonoBehaviour
             hitbox.transform.localScale = new Vector3(1, 1, 1);    // invert this too to prevent errors
         }
     }
-    protected void OverrideApplyVelocity(Action newApplyVelocity)
+    public void OverrideApplyVelocity(Action newApplyVelocity)
     {
         // Call this with null to cancel
+        if (applyVelocityOverride != null) Debug.LogWarning("Warning: Overrided Apply Velocity without clearing the previous override");
         applyVelocityOverride = newApplyVelocity;
     }
     protected void ApplyVelocity()
@@ -227,7 +234,41 @@ public abstract class Character : MonoBehaviour
             applyVelocityOverride.Invoke();
             return;
         }
-        controller.Move(new Vector3(_speed.x, _verticalVelocity, _speed.y) * Time.deltaTime);
+        controller.Move(new Vector3(Speed.x, _verticalVelocity, Speed.y) * Time.deltaTime);
+    }
+
+    public void AddStatusEffect(StatusEffect effect)
+    {
+        if (effect == null) return;
+        foreach (var existing in StatusEffects)
+        {
+            if (existing.GetType() == effect.GetType())
+            {
+                // This effect already exists in the list, so extend the timer to whichever timer is longer
+                float longest = Mathf.Max(existing.Duration, effect.Duration);
+                existing.Duration = longest;
+                existing.Timer = 0;
+                return;
+            }
+        }
+        // This is a new status effect, add it.
+        StatusEffects.Add(effect);
+        effect.OnStart?.Invoke(this);
+    }
+    public void TickStatusEffects()
+    {
+        for (int i = 0; i < StatusEffects.Count; i++)
+        {
+            StatusEffect effect = StatusEffects[i];
+            effect.OnTick?.Invoke(this);
+            effect.Timer += Time.deltaTime;
+            if (effect.Timer > effect.Duration)
+            {
+                // This effect is over
+                effect.OnEnd?.Invoke(this);
+                StatusEffects.RemoveAt(i);
+            }
+        }
     }
 
     public bool Damage(int amount, Vector3? hitPt = null)
@@ -267,7 +308,7 @@ public abstract class Character : MonoBehaviour
             OnRevive?.Invoke();
             model.Animator.SetTrigger(_animEndProne_T);
             model.Animator.ResetTrigger(_animProne_T);
-            _hasControl = true;
+            HasControl = true;
             _canBeHit = true;
         }
     }
@@ -282,9 +323,9 @@ public abstract class Character : MonoBehaviour
         // Go prone, revoke all control
         model.Animator.ResetTrigger(_animEndProne_T);
         model.Animator.SetTrigger(_animProne_T);
-        _hasControl = false;
+        HasControl = false;
         _canBeHit = false;
-        _speed = Vector2.zero;
+        Speed = Vector2.zero;
     }
 
     protected IEnumerator C_BlinkOut()
@@ -316,12 +357,12 @@ public abstract class Character : MonoBehaviour
         OnLoseControl?.Invoke();
         // Revoke control
         _hasMovement = false;
-        _hasControl = false;
+        HasControl = false;
         // Go flying
         model.Animator.ResetTrigger(_animEndProne_T);
         model.Animator.SetTrigger(_animProne_T);
         _verticalVelocity = Mathf.Sign(knockbackForce) * Mathf.Sqrt(Mathf.Abs(knockbackForce) * -2f * gravityScale);
-        _speed = new(dirRight ? 2f : -2f, 0f);
+        Speed = new(dirRight ? 2f : -2f, 0f);
         // Give some time to be knocked back
         yield return new WaitForSeconds(0.2f);
         // Wait until grounded again
@@ -337,7 +378,7 @@ public abstract class Character : MonoBehaviour
             yield return new WaitUntil(() => Grounded);
         }
         // Now grounded. Stop all velocity. Invincible until unproned
-        _speed = Vector2.zero;
+        Speed = Vector2.zero;
         // Small stun time
         yield return new WaitForSeconds(0.5f);
         // Give control back
@@ -348,7 +389,7 @@ public abstract class Character : MonoBehaviour
         }
         model.Animator.ResetTrigger(_animProne_T);
         model.Animator.SetTrigger(_animEndProne_T);
-        _hasControl = true;
+        HasControl = true;
         _hasMovement = true;
         _canBeHit = true;
     }
@@ -368,8 +409,8 @@ public abstract class Character : MonoBehaviour
         OnLoseControl?.Invoke();
         OnHurtStun?.Invoke();
         // Revoke control
-        _hasControl = false;
-        _speed = Vector2.zero;
+        HasControl = false;
+        Speed = Vector2.zero;
         // Hurt animation
         model.Animator.ResetTrigger(_animEndHurt_T);
         model.Animator.SetTrigger(_animHurt_T);
@@ -382,7 +423,7 @@ public abstract class Character : MonoBehaviour
         }
         model.Animator.ResetTrigger(_animHurt_T);
         model.Animator.SetTrigger(_animEndHurt_T);
-        _hasControl = true;
+        HasControl = true;
     }
 
     protected List<KeyValuePair<CharacterHitbox, Vector3>> ForwardAttackHitboxCollisions(Vector3 origin, Vector3 direction, float range)

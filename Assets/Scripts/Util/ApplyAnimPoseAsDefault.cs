@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 
+#if UNITY_EDITOR
 public class ApplyAnimPoseAsDefault : MonoBehaviour
 {
     [MenuItem("Util/Bake Animation Pose As Default (from Clip)")]
@@ -81,3 +82,5 @@ public class ApplyAnimPoseAsDefault : MonoBehaviour
         return null;
     }
 }
+
+#endif
