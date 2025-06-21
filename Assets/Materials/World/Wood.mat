@@ -29,7 +29,7 @@ Material:
   - _IS_ANGELRING_OFF
   - _IS_CLIPPING_OFF
   - _IS_OUTLINE_CLIPPING_NO
-  - _OUTLINE_POS
+  - _OUTLINE_NML
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -474,7 +474,7 @@ Material:
     - _NormalMapSpace: 0
     - _NormalScale: 1
     - _NumLayersCount: 1
-    - _OUTLINE: 1
+    - _OUTLINE: 0
     - _ObjectSpaceUVMapping: 0
     - _OcclusionStrength: 1
     - _Offset_X_Axis_BLD: -0.05

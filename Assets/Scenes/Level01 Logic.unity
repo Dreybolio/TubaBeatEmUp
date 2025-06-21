@@ -1397,6 +1397,18 @@ PrefabInstance:
       propertyPath: m_VersionIndex
       value: 5632
       objectReference: {fileID: 0}
+    - target: {fileID: 982658255420309919, guid: 57a598dd65ce7aa4491a05be0d592efa, type: 3}
+      propertyPath: m_SelectedEdges.Array.size
+      value: 16
+      objectReference: {fileID: 0}
+    - target: {fileID: 982658255420309919, guid: 57a598dd65ce7aa4491a05be0d592efa, type: 3}
+      propertyPath: m_SelectedFaces.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 982658255420309919, guid: 57a598dd65ce7aa4491a05be0d592efa, type: 3}
+      propertyPath: m_SelectedVertices.Array.size
+      value: 16
+      objectReference: {fileID: 0}
     - target: {fileID: 1661021325812293596, guid: 57a598dd65ce7aa4491a05be0d592efa, type: 3}
       propertyPath: m_Name
       value: Encounter 1 Barrier 2
