@@ -29,6 +29,7 @@ public class PlayerSpawner : MonoBehaviour
             if (physicalPlayer != null)
             {
                 physicalPlayer.transform.position = spawnPoint;
+                print($"spawnPoint: {spawnPoint}, playerPos: {player.Controller.transform.position}");
             }
         }
     }

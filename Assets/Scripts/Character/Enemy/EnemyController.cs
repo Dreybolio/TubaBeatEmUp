@@ -63,7 +63,6 @@ public class EnemyController : Character
         EnemyManager.Instance.Enemies.Add(this);
         EnemyManager.Instance.AddToSquad(this, SquadID);
         aiBehaviour.Enemy = this;
-        StartCoroutine(C_AILoop());
     }
 
     private void OnEnable()
@@ -91,6 +90,8 @@ public class EnemyController : Character
 
     private void Update()
     {
+        AILoop();
+
         GroundedCheck();
         JumpAndGravity(false, jumpHeight);
         Move(_movementInput, TargetSpeed, false);
@@ -129,9 +130,9 @@ public class EnemyController : Character
         }
     }
 
-    private IEnumerator C_AILoop()
+    private void AILoop()
     {
-        while (Health > 0)
+        if (Health > 0)
         {
             AI_Decision decision = aiBehaviour.MakeDecision(SquadRole, aiDifficulty);
             switch (decision.action)
@@ -152,7 +153,7 @@ public class EnemyController : Character
 
                 case AI_Action.MOVE:
                     _movementInput = decision.data;
-                    TargetSpeed = walkSpeed;
+                    if (TargetSpeed == 0) TargetSpeed = DefaultSpeed;
                     break;
             }
 
@@ -166,7 +167,6 @@ public class EnemyController : Character
                 default:
                     break;
             }
-            yield return null;
         }
     }
 

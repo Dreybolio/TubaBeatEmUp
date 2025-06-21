@@ -41,9 +41,6 @@ public abstract class PlayerController : Character
     [Header("Audio")]
     [SerializeField] private AudioClip sndSpecial;
 
-    [Header("Player Icons")]
-    public Sprite Icon;
-
     [Header("Prefabs")]
     [SerializeField] private RevivePlayer reviveMinigame;
 

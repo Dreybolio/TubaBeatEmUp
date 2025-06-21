@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fe665dcd6c44d0469d47c9cfff0c516, type: 3}
+  m_Name: PlayerDruid
+  m_EditorClassIdentifier: 
+  name: TEMP_NAME
+  description: Flute Druid
+  spawnablePrefab: {fileID: 7676838512766391995, guid: 15e202dd9498b4c4c855f6c7dbb43491, type: 3}
+  modelPrefab: {fileID: 1795148701609255359, guid: 7270dc2565bac30438fd4e4e9900b59b, type: 3}
+  icon: {fileID: -1088540012, guid: 4857f46cb44b70a488d5ced9fdb16a25, type: 3}

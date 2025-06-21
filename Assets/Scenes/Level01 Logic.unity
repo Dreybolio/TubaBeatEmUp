@@ -818,6 +818,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  OnCollectionLoaded:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &870865527
 Transform:
   m_ObjectHideFlags: 0

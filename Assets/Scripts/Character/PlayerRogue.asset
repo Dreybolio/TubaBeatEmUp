@@ -16,3 +16,4 @@ MonoBehaviour:
   description: Saxophone Rogue
   spawnablePrefab: {fileID: 6144980914151299805, guid: 195bdbdd25c9e2c4ba92fa63b663093b, type: 3}
   modelPrefab: {fileID: 1795148701609255359, guid: 8f020ab02e9a25f44b8939bf217b06e3, type: 3}
+  icon: {fileID: -1178481544, guid: 4857f46cb44b70a488d5ced9fdb16a25, type: 3}

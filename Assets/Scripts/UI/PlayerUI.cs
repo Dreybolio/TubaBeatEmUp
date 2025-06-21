@@ -32,7 +32,7 @@ public class PlayerUI : MonoBehaviour
     public void Initialize(PlayerController player)
     {
         _player = player;
-        playerIcon.sprite = player.Icon;
+        playerIcon.sprite = player.Player.CharacterData.icon;
         player.OnHurt += HealthChange;
         player.OnHeal += HealthChange;
         player.OnMagicChanged += MagicChange;

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
+#pragma warning disable CS0162 // Unreachable code detected
 public class EnemyManager : Singleton<EnemyManager>
 {
     public List<EnemyController> Enemies { get; private set; } = new();
@@ -14,7 +14,8 @@ public class EnemyManager : Singleton<EnemyManager>
     // Typically forced for 5 secs then allowed to be auto-placed again
     private Dictionary<EnemyController, Transform> targetOverrides = new();
     private Dictionary<EnemyController, AI_SquadRole> roleOverrides = new();
-    private float TIME_RESET_OVERRIDE = 5.0f;
+    const float TIME_RESET_OVERRIDE = 5.0f;
+    const bool PRINT = false;
 
     public void AddToSquad(EnemyController c, int squadID)
     {
@@ -219,14 +220,13 @@ public class EnemyManager : Singleton<EnemyManager>
             }
 
         }
-
-        PrintSquad(squadID);
+        if (PRINT) PrintSquad(squadID);
     }
 
     public void AddTargetOverride(EnemyController c, Transform target)
     {
         // Here, a character can request to change their target. Will requre the targets to be rebalanced afterwards.
-        Debug.Log($"Enemy {c.name} is overriding target to {target.name}");
+        if (PRINT) Debug.Log($"Enemy {c.name} is overriding target to {target.name}");
         C_AddTargetOverride(c, target);
         BalanceSquad(c.SquadID);
     }
@@ -234,7 +234,7 @@ public class EnemyManager : Singleton<EnemyManager>
     public void AddRoleOverride(EnemyController c, AI_SquadRole role)
     {
         // Here, a character can request to change their target. Will requre the targets to be rebalanced afterwards.
-        Debug.Log($"Enemy {c.name} is overriding role to {role}");
+        if (PRINT) Debug.Log($"Enemy {c.name} is overriding role to {role}");
         C_AddRoleOverride(c, role);
         BalanceSquad(c.SquadID);
     }
@@ -287,3 +287,4 @@ public class EnemyManager : Singleton<EnemyManager>
     }
 }
 
+#pragma warning restore CS0162 // Unreachable code detected

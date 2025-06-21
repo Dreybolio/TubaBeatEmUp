@@ -39,7 +39,7 @@ public class FollowPlayer : MonoBehaviour
 
     private void Update()
     {
-        if (targets.Length > 0)
+        if (targets != null && targets.Length > 0)
         {
             // We have targets, track them
 

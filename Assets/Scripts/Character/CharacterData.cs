@@ -10,6 +10,7 @@ public class CharacterData : ScriptableObject
     public string description;
     public Character spawnablePrefab;
     public CharacterModel modelPrefab;
+    public Sprite icon;
 }
 
 [Serializable]

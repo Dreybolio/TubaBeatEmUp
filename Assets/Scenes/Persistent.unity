@@ -151,10 +151,12 @@ MonoBehaviour:
   Characters:
   - {fileID: 11400000, guid: e9783982acbd69744a8f41dff7425152, type: 2}
   - {fileID: 11400000, guid: 200587628ec739242b947dd2d6f4e3f3, type: 2}
+  - {fileID: 11400000, guid: c0474f90e36904e46af0e274c11cac64, type: 2}
   - {fileID: 11400000, guid: 75c4f4e9bb1ec3d4f954e869d278c489, type: 2}
   _unlockByDefault:
   - {fileID: 11400000, guid: e9783982acbd69744a8f41dff7425152, type: 2}
   - {fileID: 11400000, guid: 200587628ec739242b947dd2d6f4e3f3, type: 2}
+  - {fileID: 11400000, guid: c0474f90e36904e46af0e274c11cac64, type: 2}
 --- !u!4 &27403331
 Transform:
   m_ObjectHideFlags: 0
