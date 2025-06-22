@@ -156,7 +156,7 @@ Transform:
   m_GameObject: {fileID: 4867231784695951723}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.098, y: 0.201, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -180,7 +180,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd4403112b419114e818236598c04d85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 3
+  walkSpeed: 3
   acceleration: 20
   airAcceleration: 3
   jumpHeight: 1.2
@@ -204,6 +204,7 @@ MonoBehaviour:
   lightAttackDistance: 1
   lightAttackDamage: 2
   lightAttackAirborneKnockbackForce: 0.4
+  testing: 2
   heavyAttackDistance: 1
   heavyAttackDamage: 3
   heavyAttackKnockbackForce: 0.8
@@ -220,7 +221,6 @@ MonoBehaviour:
   MaxMagic: 100
   magicRegenRate: 1
   sndSpecial: {fileID: 8300000, guid: e4ef28fa8a907714184b15594f7fc74a, type: 3}
-  Icon: {fileID: 759965487, guid: 07243dcd721647e40ab1dc36777878b0, type: 3}
   reviveMinigame: {fileID: 2901103612801966216, guid: 5fa27584e8f61ae42adf8809c0adfd7f, type: 3}
   specialMagicCost: 60
   specialMagicRegenCooldown: 0.75
