@@ -11,7 +11,6 @@ public abstract class PlayerController : Character
     [SerializeField] private float lightAttackDistance = 1.0f;
     [SerializeField] private int lightAttackDamage = 2;
     [SerializeField] private float lightAttackAirborneKnockbackForce = 0.4f;
-    [SerializeField] private float testing = 0.0f;
 
     [Header("Actions - Heavy")]
     [SerializeField] private float heavyAttackDistance = 1.0f;
@@ -112,7 +111,6 @@ public abstract class PlayerController : Character
 
     private void Update()
     {
-        Debug.Log(testing);
         GroundedCheck();
         JumpAndGravity(Player.GetPlayerJump(), _dashing ? dashJumpHeight : jumpHeight);
         if (Player != null && Player.GetPlayerJumpReleased())

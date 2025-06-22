@@ -34,6 +34,7 @@ public class EnemyController : Character
     [SerializeField] private AttackCombo comboDoubleHeavy;
     private List<AttackCombo> combos;
 
+
     // Vars for AI (Ignored when PlayerController inhereits this)
     [NonSerialized] public Character Target;
     [NonSerialized] public AI_SquadRole SquadRole;

@@ -9,6 +9,7 @@ public class Player : MonoBehaviour {
     public event PlayerEventVal<Player> OnInteractEnd;
     public event PlayerEventVal<Player> OnCancel;
     public event PlayerEventVal<Player> OnCancelEnd;
+    public event PlayerEventVal<int> OnCoinAmountChanged;
 
     public delegate void UIEvent();
     public delegate void UIEventVal<T>(T val);
@@ -23,6 +24,7 @@ public class Player : MonoBehaviour {
     // Assigned Data at runtime
     [NonSerialized] public CharacterData CharacterData;
     [NonSerialized] public PlayerController Controller;
+    public int CoinAmount { get; private set; }
 
     // Variables
     private Vector2 _moveInput = Vector2.zero;
@@ -72,6 +74,18 @@ public class Player : MonoBehaviour {
         Debug.LogError($"{name}: Tried to spawn a physical player with no data");
         return null;
     }
+
+    /*
+     *  CHANGE COIN
+     */
+
+    public void  ChangeCoinAmount(int amount)
+    {
+        CoinAmount += amount;
+        OnCoinAmountChanged?.Invoke(CoinAmount);
+    }
+    
+
 
     /*
      *  PLAYER ACTIONS

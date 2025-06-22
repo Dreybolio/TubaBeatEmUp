@@ -1,4 +1,5 @@
 using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.TextCore.Text;
 using UnityEngine.UI;
@@ -8,6 +9,7 @@ public class PlayerUI : MonoBehaviour
     [Header("Pointers")]
     [SerializeField] private Slider healthSlider;
     [SerializeField] private Slider magicSlider;
+    [SerializeField] private TextMeshProUGUI coins;
     [SerializeField] private Image playerIcon;
 
     PlayerController _player;
@@ -36,6 +38,7 @@ public class PlayerUI : MonoBehaviour
         player.OnHurt += HealthChange;
         player.OnHeal += HealthChange;
         player.OnMagicChanged += MagicChange;
+        player.Player.OnCoinAmountChanged += CoinChange;
     }
 
     public void HealthChange(int _)
@@ -46,5 +49,10 @@ public class PlayerUI : MonoBehaviour
     public void MagicChange(float _) 
     {
         SetMagic(_player.Magic / _player.MaxMagic);
+    }
+
+    public void CoinChange(int _)
+    {
+        coins.text = _player.Player.CoinAmount.ToString();
     }
 }
