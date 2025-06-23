@@ -8,16 +8,20 @@ using Random = UnityEngine.Random;
 [RequireComponent(typeof(AIBehaviours))]
 public class EnemyController : Character
 {
-    [Header("Attacks")]
+    [Header("Actions - Light")]
     [SerializeField] private float lightAttackDistance = 1.0f;
     [SerializeField] private int lightAttackDamage = 2;
     [SerializeField] private float lightAttackAirborneKnockbackForce = 0.4f;
 
-
+    [Header("Actions - Heavy")]
     [SerializeField] private float heavyAttackDistance = 1.0f;
     [SerializeField] private int heavyAttackDamage = 3;
     [SerializeField] private float heavyAttackKnockbackForce = 0.8f;
     [SerializeField] private float heavyAttackAirborneKnockbackForce = 1.2f;
+
+    [Header("Actions - Roll")]
+    [SerializeField] private float rollSpeed = 5.0f;
+    [SerializeField][Range(0, 100)] private int rollChance = 50;
 
     [Header("AI")]
     [SerializeField] private AIBehaviours aiBehaviour;
@@ -76,6 +80,7 @@ public class EnemyController : Character
         OnLoseControl += CancelAction;
         OnHurtStun += HurtStunCounter;
         OnDeath += EnemyDeath;
+        OnEndProne += RollChance;
     }
     private void OnDisable()
     {
@@ -87,6 +92,7 @@ public class EnemyController : Character
         OnLoseControl -= CancelAction;
         OnHurtStun -= HurtStunCounter;
         OnDeath += EnemyDeath;
+        OnEndProne -= RollChance;
     }
 
     private void Update()
@@ -209,7 +215,7 @@ public class EnemyController : Character
         model.Animator.SetInteger(_animActionID_I, (int)ActionType.ATTACK_SPIN);
         _hasMovement = false;
         _canBeHit = false;
-        // Do dash speeds as this happens
+        // Do walk speeds as this happens
         Speed = _facingRight ? new(walkSpeed, 0) : new(-walkSpeed, 0);
         // Revert variables when done
         OnActionFinished += SpinAttackEnd;
@@ -223,6 +229,35 @@ public class EnemyController : Character
         Speed = Vector2.zero;
         _hasMovement = true;
         _canBeHit = true;
+    }
+    private void RollChance()
+    {
+        if (Random.Range(0, 100) <= rollChance)
+        {
+            Roll();
+        }
+    }
+    public void Roll()
+    {
+        TurnFaceTarget(Target.transform);
+        _currAction = ActionType.ROLL;
+        model.Animator.SetInteger(_animActionID_I, (int)ActionType.ROLL);
+        _hasMovement = false;
+        _canBeHit = false;
+
+        // Do roll speeds as this happens
+        Speed = _facingRight ? new(rollSpeed, 0) : new(-rollSpeed, 0);
+        OnActionFinished += RollEnd;
+    }
+
+    public void RollEnd()
+    {
+        // Stop listening for self
+        OnActionFinished -= RollEnd;
+        // Revert Variables
+        _hasMovement = true;
+        _canBeHit = true;
+        Speed = Vector2.zero;
     }
 
     public void ActionAnimFinished()

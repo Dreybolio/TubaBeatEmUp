@@ -285,6 +285,6 @@ public class PlayerClassBarbarian : PlayerController
         _animSpecialSlam_T = Animator.StringToHash("Override_B");
         _animSpecialBash_T = Animator.StringToHash("Override_C");
         _animSpecialBashRecovery_T = Animator.StringToHash("Override_D");
-        _animSpecialRollOut_T = Animator.StringToHash("Roll");
+        _animSpecialRollOut_T = Animator.StringToHash("Override_E");
     }
 }

@@ -39,6 +39,7 @@ public enum ActionType
     DASH,
     ATTACK_DRILL,
     ATTACK_SPIN,
+    ROLL,
 }
 
 public enum CharacterType

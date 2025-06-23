@@ -45,6 +45,7 @@ public abstract class Character : MonoBehaviour
     public event CharacterEvent OnRevive;
     public event CharacterEvent OnLoseControl;
     public event CharacterEvent OnHurtStun;
+    public event CharacterEvent OnEndProne;
 
     public delegate void CharacterEventVal<T>(T i);
     public event CharacterEventVal<int> OnHurt;
@@ -392,6 +393,7 @@ public abstract class Character : MonoBehaviour
         HasControl = true;
         _hasMovement = true;
         _canBeHit = true;
+        OnEndProne?.Invoke();
     }
 
     public void HurtStun()
