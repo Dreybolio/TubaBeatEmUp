@@ -75,6 +75,7 @@ public class EnemyController : Character
         model.AnimListener.OnLightHitFrame += LightAttackHitFrame;     // Event01: Light Attack Hit Frame
         model.AnimListener.OnHeavyHitFrame += HeavyAttackHitFrame;     // Event02: Heavy Attack Hit Frame
         model.AnimListener.OnActionAnimOver += ActionAnimFinished;         // Event03: Attack Over Event
+        model.AnimListener.OnSpawnParticle += SpawnParticle;
 
         // Events with oneself
         OnLoseControl += CancelAction;
@@ -87,6 +88,7 @@ public class EnemyController : Character
         model.AnimListener.OnLightHitFrame += LightAttackHitFrame;     // Event01: Light Attack Hit Frame
         model.AnimListener.OnHeavyHitFrame += HeavyAttackHitFrame;     // Event02: Heavy Attack Hit Frame
         model.AnimListener.OnActionAnimOver -= ActionAnimFinished;         // Event03: Attack Over Event
+        model.AnimListener.OnSpawnParticle -= SpawnParticle;
 
         // Events with oneself
         OnLoseControl -= CancelAction;

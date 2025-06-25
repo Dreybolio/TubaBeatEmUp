@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   name: TEMP_NAME
   description: Flute Druid
-  spawnablePrefab: {fileID: 7676838512766391995, guid: 15e202dd9498b4c4c855f6c7dbb43491, type: 3}
+  spawnablePrefab: {fileID: 8723687460415047862, guid: deaf639bdeef18842b75fe7cd3ac39ae, type: 3}
   modelPrefab: {fileID: 1795148701609255359, guid: 7270dc2565bac30438fd4e4e9900b59b, type: 3}
   icon: {fileID: -1088540012, guid: 4857f46cb44b70a488d5ced9fdb16a25, type: 3}

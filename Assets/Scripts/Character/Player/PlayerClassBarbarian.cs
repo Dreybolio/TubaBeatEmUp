@@ -76,6 +76,7 @@ public class PlayerClassBarbarian : PlayerController
         if (Grounded)
         {
             // Rise for .50s
+            SpawnParticle(ParticleID.DUST_PUFF);
             _verticalVelocity = Mathf.Sqrt(specialRiseHeight * -2f * specialCustomGravity);
             while (timer < specialRiseTime)
             {

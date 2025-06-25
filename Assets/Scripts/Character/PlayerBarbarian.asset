@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   name: Pipefury
   description: Bagpipe Barbarian
-  spawnablePrefab: {fileID: 4107868876215196947, guid: dafb25ab04dbb7f46b111f165788c7ff, type: 3}
+  spawnablePrefab: {fileID: 426949635983040448, guid: 81914bb652d28c9478beec4b03f9dc37, type: 3}
   modelPrefab: {fileID: 1795148701609255359, guid: 5f596943359f9d9419d89d7fe5ba2de6, type: 3}
   icon: {fileID: 1365802249, guid: 4857f46cb44b70a488d5ced9fdb16a25, type: 3}

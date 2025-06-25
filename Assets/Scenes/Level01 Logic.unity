@@ -242,14 +242,14 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   dynamicScaleEnemies:
-  - prefab: {fileID: 8747550365576440670, guid: 82241f5cd00ac97488d4506d8f01fdbe, type: 3}
+  - prefab: {fileID: 1888906178203695825, guid: b47f962fd10442242acd714bcd9371a0, type: 3}
     spawnPos: {fileID: 69224883}
-  - prefab: {fileID: 8747550365576440670, guid: 82241f5cd00ac97488d4506d8f01fdbe, type: 3}
+  - prefab: {fileID: 1888906178203695825, guid: b47f962fd10442242acd714bcd9371a0, type: 3}
     spawnPos: {fileID: 1475659051}
   dynamicHalfScaleEnemies:
-  - prefab: {fileID: 8747550365576440670, guid: 82241f5cd00ac97488d4506d8f01fdbe, type: 3}
+  - prefab: {fileID: 1888906178203695825, guid: b47f962fd10442242acd714bcd9371a0, type: 3}
     spawnPos: {fileID: 731504806}
-  - prefab: {fileID: 8747550365576440670, guid: 82241f5cd00ac97488d4506d8f01fdbe, type: 3}
+  - prefab: {fileID: 1888906178203695825, guid: b47f962fd10442242acd714bcd9371a0, type: 3}
     spawnPos: {fileID: 1846635544}
   staticEnemies: []
   OnEncounterFinished:
@@ -1002,9 +1002,9 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   dynamicScaleEnemies:
-  - prefab: {fileID: 8747550365576440670, guid: 72908adfd3d7446449ba5671e4df7ec9, type: 3}
+  - prefab: {fileID: 2335021825421171348, guid: 1ac02dea2d0b7d646a4c0662ad06675b, type: 3}
     spawnPos: {fileID: 486461804}
-  - prefab: {fileID: 8747550365576440670, guid: 72908adfd3d7446449ba5671e4df7ec9, type: 3}
+  - prefab: {fileID: 2335021825421171348, guid: 1ac02dea2d0b7d646a4c0662ad06675b, type: 3}
     spawnPos: {fileID: 497351164}
   dynamicHalfScaleEnemies: []
   staticEnemies: []

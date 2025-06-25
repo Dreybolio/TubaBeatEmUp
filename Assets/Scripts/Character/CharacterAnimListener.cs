@@ -9,6 +9,9 @@ public class CharacterAnimListener : MonoBehaviour
     public event AnimationEvent OnDashSpecialHitFrame;
     public event AnimationEvent OnActionAnimOver;
 
+    public delegate void AnimationEventVal<T>(T val);
+    public event AnimationEventVal<ParticleID> OnSpawnParticle;
+
     // Special events that are generic purpose for some hard-coded animation event
     public event AnimationEvent OnEvent01;
 
@@ -35,5 +38,9 @@ public class CharacterAnimListener : MonoBehaviour
     public void TriggerEvent01()
     {
         OnEvent01?.Invoke();
+    }
+    public void SpawnParticle(ParticleID pID)
+    {
+        OnSpawnParticle?.Invoke(pID);
     }
 }

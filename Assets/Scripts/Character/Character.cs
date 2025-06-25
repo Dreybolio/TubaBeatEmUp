@@ -13,10 +13,10 @@ public abstract class Character : MonoBehaviour
     [SerializeField] protected float acceleration = 10.0f;
     [SerializeField] protected float airAcceleration = 3.0f;
     [SerializeField] protected float jumpHeight = 1.2f;
-    [SerializeField] protected float gravityScale = -15.0f;
+    [SerializeField] protected float gravityScale = -20.0f;
 
     [Header("Game Stats")]
-    public int MaxHealth;
+    public int MaxHealth = 30;
 
     [Header("Ground Detection")]
     [SerializeField] protected Transform groundCheckPos;
@@ -32,6 +32,7 @@ public abstract class Character : MonoBehaviour
 
     [Header("Model & Animation")]
     [SerializeField] protected CharacterModel model;
+    [SerializeField] protected ParticleSystem particleDustPuff;
 
     [Header("Audio")]
     [SerializeField] private AudioClip sndHurt;
@@ -79,6 +80,7 @@ public abstract class Character : MonoBehaviour
     protected bool _canBeHit = true;
     protected bool _stunImmunity = false;
     protected float _damageMult = 1.0f;
+    private bool _wasGroundedLastFrame = true;
     protected Coroutine _knockbackRoutine;
     protected Coroutine _hurtStunRoutine;
 
@@ -113,6 +115,10 @@ public abstract class Character : MonoBehaviour
             return;
         }
 
+        if (!_wasGroundedLastFrame && Grounded)
+        {
+            SpawnParticle(ParticleID.DUST_PUFF);
+        }
         // Animator: We are not jumping or falling
         model.Animator.SetBool(_animFreefall_B, false);
         if (Grounded)
@@ -125,6 +131,7 @@ public abstract class Character : MonoBehaviour
             if (HasControl && _allowJump && tryJump) // If trying to jump
             {
                 // the square root of H * -2 * G = how much velocity needed to reach desired height
+                SpawnParticle(ParticleID.DUST_PUFF);
                 _verticalVelocity = Mathf.Sqrt(height * -2f * gravityScale);
             }
         }
@@ -137,6 +144,8 @@ public abstract class Character : MonoBehaviour
         {
             _verticalVelocity += gravityScale * Time.deltaTime;
         }
+
+        _wasGroundedLastFrame = Grounded;
     }
 
     protected void InterruptJump()
@@ -506,6 +515,18 @@ public abstract class Character : MonoBehaviour
         }
 
         return hits;
+    }
+
+    protected void SpawnParticle(ParticleID pID)
+    {
+        switch (pID)
+        {
+            case ParticleID.DUST_PUFF:
+                particleDustPuff.Play();
+                break;
+            default:
+                break;
+        }
     }
 
     protected void AssignAnimationIDs()

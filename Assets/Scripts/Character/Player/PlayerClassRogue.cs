@@ -118,7 +118,7 @@ public class PlayerClassRogue: PlayerController
         do
         {
             if (prematureFinish) yield break;
-
+            SpawnParticle(ParticleID.DUST_PUFF);
             if (hitFramePassed)
             {
                 // Do a slash - the angle of the spin reference will be the angle this attack happens in

@@ -42,10 +42,11 @@ public enum ActionType
     ROLL,
 }
 
-public enum CharacterType
+public enum ParticleID
 {
-    BARBARIAN,
+    DUST_PUFF,
 }
+
 public static class Enum
 {
     public static string SceneToString(Scene scene)

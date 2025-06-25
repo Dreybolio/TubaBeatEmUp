@@ -883,6 +883,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  OnCollectionLoaded:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &1837373412
 Transform:
   m_ObjectHideFlags: 0
@@ -955,7 +958,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: DISCHORDANCE
+  m_text: CHORD HEROES
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 19f1853012a0ec445af2b2c74e8b720a, type: 2}
   m_sharedMaterial: {fileID: -3582420708403261020, guid: 19f1853012a0ec445af2b2c74e8b720a, type: 2}

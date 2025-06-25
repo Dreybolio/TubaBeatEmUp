@@ -89,6 +89,7 @@ public abstract class PlayerController : Character
         model.AnimListener.OnLightHitFrame += LightAttackHitFrame;    // Event01: Light Action Hit Frame
         model.AnimListener.OnHeavyHitFrame += HeavyAttackHitFrame;    // Event02: Heavy Action Hit Frame
         model.AnimListener.OnActionAnimOver += ActionAnimFinished;     // Event03: Action animation over (any)
+        model.AnimListener.OnSpawnParticle += SpawnParticle;
 
         // Establish events with oneself
         OnLoseControl += CancelAction;
@@ -103,6 +104,7 @@ public abstract class PlayerController : Character
         model.AnimListener.OnLightHitFrame -= LightAttackHitFrame;
         model.AnimListener.OnHeavyHitFrame -= HeavyAttackHitFrame;
         model.AnimListener.OnActionAnimOver -= ActionAnimFinished;
+        model.AnimListener.OnSpawnParticle -= SpawnParticle;
 
         // Unsubscribe from events with oneself
         OnLoseControl -= CancelAction;
