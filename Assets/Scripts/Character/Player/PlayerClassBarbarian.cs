@@ -146,6 +146,7 @@ public class PlayerClassBarbarian : PlayerController
         List<KeyValuePair<CharacterHitbox, Vector3>> hits = CircleAttackHitboxCollisions(centerPoint.position, specialDistance);
         foreach (var c in hits)
         {
+            SoundManager.Instance.PlaySound(sfxHeavyHit, 1f, true);
             bool killedEnemy = c.Key.Character.Damage(specialDamage, c.Value);
             bool knockRight = c.Key.transform.position.x > transform.position.x;
             if (!c.Key.Character.Grounded)
@@ -270,6 +271,7 @@ public class PlayerClassBarbarian : PlayerController
         List<KeyValuePair<CharacterHitbox, Vector3>> hits = CircleAttackHitboxCollisions(forwardXPoint.position, dashSpecialDistance);
         foreach (var c in hits)
         {
+            SoundManager.Instance.PlaySound(sfxHeavyHit, 1f, true);
             bool killedEnemy = c.Key.Character.Damage(dashSpecialDamage, c.Value);
             bool knockRight = c.Key.transform.position.x > forwardXPoint.position.x;
             c.Key.Character.Knockback(knockRight, dashSpecialKnockbackForce);

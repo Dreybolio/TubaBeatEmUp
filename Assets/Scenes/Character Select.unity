@@ -1134,6 +1134,9 @@ MonoBehaviour:
           m_StringArgument: UI
           m_BoolArgument: 1
         m_CallState: 2
+  OnCollectionLoaded:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &1837373412
 Transform:
   m_ObjectHideFlags: 0

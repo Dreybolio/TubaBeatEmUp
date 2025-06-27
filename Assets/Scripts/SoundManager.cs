@@ -1,45 +1,91 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class SoundManager : Singleton<SoundManager>
 {
-    [SerializeField] private AudioSource _musicSource, _sfxSource1, _sfxSource2, _sfxSource3;
+    [Header("Pointers")]
+    [SerializeField] private AudioSource musicSource;
+    [Header("Prefabs")]
+    [SerializeField] private AudioSource sfxPrefab;
+
+    private List<AudioSource> _sfxLoopingSources = new();
+
     public void PlaySound(AudioClip clip, float volume = 1, bool allowPitchVariance = false)
+    {
+        if (clip == null) return;
+        float pitch = 1;
+        if (allowPitchVariance)
+        {
+            pitch = Random.Range(0.90f, 1.10f);
+        }
+
+        AudioSource src = Instantiate(sfxPrefab, transform);
+        src.clip = clip;
+        src.volume = volume;
+        src.pitch = pitch;
+        src.Play();
+
+        Destroy(src.gameObject, clip.length);
+    }
+    public void PlaySound(AudioClip[] clips, float volume = 1, bool allowPitchVariance = false)
+    {
+        if (clips == null || clips.Length == 0) return;
+        int rand = Random.Range(0, clips.Length);
+        PlaySound(clips[rand], volume, allowPitchVariance);
+    }
+
+    public AudioSource PlaySoundLooping(AudioClip clip, float volume = 1, bool allowPitchVariance = false)
     {
         float pitch = 1;
         if (allowPitchVariance)
         {
             pitch = Random.Range(0.90f, 1.10f);
         }
-        // Tries each available SFX source, ignores if all are used.
-        if (!_sfxSource1.isPlaying)
-        {
-            _sfxSource1.pitch = pitch;
-            _sfxSource1.PlayOneShot(clip, volume);
-            return;
-        }
-        if (!_sfxSource2.isPlaying)
-        {
-            _sfxSource2.pitch = pitch;
-            _sfxSource2.PlayOneShot(clip, volume);
-            return;
-        }
-        if (!_sfxSource3.isPlaying)
-        {
-            _sfxSource3.pitch = pitch;
-            _sfxSource3.PlayOneShot(clip, volume);
-            return;
-        }
-        // As an emergency, play make a new object for this
-        AudioSource.PlayClipAtPoint(clip, Vector3.zero);
+
+        AudioSource src = Instantiate(sfxPrefab, transform);
+        src.clip = clip;
+        src.volume = volume;
+        src.pitch = pitch;
+        src.loop = true;
+        src.Play();
+
+        // Returns the created source so that the calling code can stop this themselves.
+        return src;
     }
+
+    public void StopSoundLooping(AudioSource src)
+    {
+        // Stop and destroy a passed-in source.
+        if (src == null) return;
+        _sfxLoopingSources.Remove(src);
+        src.Stop();
+        Destroy(src.gameObject);
+    }
+
+    public void StopSoundLooping(AudioClip clip)
+    {
+        // Stop and destroy all sources playing a certain clip
+        var matches = _sfxLoopingSources
+            .Where(src => src.clip == clip)
+            .ToList();
+        _sfxLoopingSources = _sfxLoopingSources
+            .Except(matches)
+            .ToList();
+        foreach (var src in matches)
+        {
+            src.Stop();
+            Destroy(src.gameObject);
+        }
+    }
+
     public void PlayMusic(AudioClip music, bool loop = true, float volume = 1)
     {
-        _musicSource.clip = music;
-        _musicSource.loop = loop;
-        _musicSource.volume = volume;
-        _musicSource.Play();
+        musicSource.clip = music;
+        musicSource.loop = loop;
+        musicSource.volume = volume;
+        musicSource.Play();
     }
     public void PlayMusicWithIntro(AudioClip intro, AudioClip music, float volume = 1)
     {
@@ -47,15 +93,15 @@ public class SoundManager : Singleton<SoundManager>
     }
     private IEnumerator C_PlayMusicWithIntro(AudioClip intro, AudioClip music, float volume = 1)
     {
-        _musicSource.volume = volume;
+        musicSource.volume = volume;
 
-        _musicSource.clip = intro;
-        _musicSource.loop = false;
-        _musicSource.Play();
+        musicSource.clip = intro;
+        musicSource.loop = false;
+        musicSource.Play();
         yield return new WaitForSeconds(intro.length);
-        _musicSource.clip = music;
-        _musicSource.loop = true;
-        _musicSource.Play();
+        musicSource.clip = music;
+        musicSource.loop = true;
+        musicSource.Play();
     }
     public void FadeOutMusic(float time)
     {
@@ -63,22 +109,14 @@ public class SoundManager : Singleton<SoundManager>
     }
     private IEnumerator C_FadeOutMusic(float time)
     {
-        float startVol = _musicSource.volume;
+        float startVol = musicSource.volume;
         float timeElapsed = 0;
         while (timeElapsed < time)
         {
-            _musicSource.volume = Mathf.Lerp(startVol, 0, timeElapsed / time);
+            musicSource.volume = Mathf.Lerp(startVol, 0, timeElapsed / time);
             timeElapsed += Time.deltaTime;
             yield return null;
         }
-        _musicSource.Stop();
-    }
-    public static void SetMasterVolume(float volume)
-    {
-        AudioListener.volume = volume;
-    }
-    public static float GetMasterVolume()
-    {
-        return AudioListener.volume;
+        musicSource.Stop();
     }
 }

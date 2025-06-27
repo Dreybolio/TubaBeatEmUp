@@ -192,7 +192,8 @@ MonoBehaviour:
   hitbox: {fileID: 8737890008463291635}
   model: {fileID: 5808824605322726632}
   particleDustPuff: {fileID: 5419485530581014355}
-  sndHurt: {fileID: 8300000, guid: 5537e622a46200a43882f28ec877497c, type: 3}
+  sfxHurt: []
+  sfxHeal: []
   prefabParticleNum: {fileID: 2259858965108060043, guid: 703459fde76a612409d98f019bd462d7, type: 3}
   lightAttackDistance: 1
   lightAttackDamage: 2
@@ -212,7 +213,29 @@ MonoBehaviour:
   spinDamageMult: 1.5
   MaxMagic: 100
   magicRegenRate: 1
-  sndSpecial: {fileID: 0}
+  sfxLightSwish:
+  - {fileID: 8300000, guid: 319572d13d6ce6e458e2e7f94ab136df, type: 3}
+  - {fileID: 8300000, guid: 2fac02510f262084a9d176c9e97040a9, type: 3}
+  - {fileID: 8300000, guid: 5ff753ff3d28f32478f5f28a901bf07e, type: 3}
+  - {fileID: 8300000, guid: d21aa4dd658f65747a64a2efba5265aa, type: 3}
+  - {fileID: 8300000, guid: 1710cd7a3269b6641bc394cbc8252b12, type: 3}
+  sfxLightHit:
+  - {fileID: 8300000, guid: 2cc6a1a325d0ac641a853c2018a9ed70, type: 3}
+  - {fileID: 8300000, guid: ac7f37c2dc387de45a97a8ec3411b7a5, type: 3}
+  - {fileID: 8300000, guid: db6e744ff35f5de4182bc696d8fb8482, type: 3}
+  - {fileID: 8300000, guid: 94f38b1bea508c84ab7c7073cf10e90e, type: 3}
+  sfxHeavySwish:
+  - {fileID: 8300000, guid: 53f09a11442cdad4ba34c81238a692db, type: 3}
+  - {fileID: 8300000, guid: dae9b3e1ee213604593edfc417eaf6aa, type: 3}
+  - {fileID: 8300000, guid: 0c0d0a395c6ca034594216586231d9cd, type: 3}
+  - {fileID: 8300000, guid: 6fff2055008f3914da7fe8e8b705a9a2, type: 3}
+  - {fileID: 8300000, guid: 580abb6ee97f57e4d8afd82f6d7a62d4, type: 3}
+  - {fileID: 8300000, guid: 7591658b6ac997049b95ca0fcfc50bf0, type: 3}
+  sfxHeavyHit:
+  - {fileID: 8300000, guid: e778f6cc471958b408a98e9e0ce98c2d, type: 3}
+  - {fileID: 8300000, guid: fc9b847403f7c304b901ea5185a2e202, type: 3}
+  - {fileID: 8300000, guid: c3082f71a67513f4eaee1c901a64a033, type: 3}
+  - {fileID: 8300000, guid: 92ef5a04ce487dd42bc96c01120d6d3a, type: 3}
   reviveMinigame: {fileID: 2901103612801966216, guid: 5fa27584e8f61ae42adf8809c0adfd7f, type: 3}
   specialMagicCost: 60
   specialMagicRegenCooldown: 0.75
@@ -232,6 +255,7 @@ MonoBehaviour:
   dashSpecialAirborneKnockbackForce: 1.4
   dashSpecialDazedDuration: 4
   dashSpecialSpeed: 6
+  sfxSpinSwish: {fileID: 8300000, guid: c9dc1910a96007048850bfc82ca3505e, type: 3}
   particleSlashPrefab: {fileID: 4306160628383777719, guid: 2dc81a2262b2b244495a9eca44dc67e1, type: 3}
 --- !u!4 &4004807786125791728 stripped
 Transform:

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Events;
 using Random = UnityEngine.Random;
 
 public class AIBehaviours : MonoBehaviour
@@ -26,12 +27,16 @@ public class AIBehaviours : MonoBehaviour
     private float COVER_EXIT_FAR_MIN_DIST = 3.0f;
     private float COVER_EXIT_FAR_MAX_DIST = 4.5f;
 
-    private float COVER_EXIT_MIN_TIMEOUT = 2.0f;
-    private float COVER_EXIT_MAX_TIMEOUT = 5.0f;
+    private float COVER_EXIT_MIN_TIMEOUT = 1.0f;
+    private float COVER_EXIT_MAX_TIMEOUT = 3.0f;
 
     private float COVER_EXIT_TIMEOUT_OFFENSE_CHANCE = 50.0f;
+    private float COVER_EXIT_PRESSURE_CHANCE = 50.0f;
 
     private float COVER_EXIT_TIMEOUT_OVERRIDE_TIME = 6.0f;
+
+    public delegate void AIEvent();
+    public AIEvent OnRoleChanged;
 
     // Vars
     private NavMeshPath _path;
@@ -39,6 +44,7 @@ public class AIBehaviours : MonoBehaviour
     private Vector3 _targetPosAlt;
     private float _attackTimer = 0.5f;
     private float _pathTimer = 0.0f;
+    private float _movePercent = 1.0f;
 
     private float _coverExitStartIdleTime;
     private float _coverExitIdleTimeout;
@@ -48,8 +54,10 @@ public class AIBehaviours : MonoBehaviour
     private bool _forceOffense = false;
 
     private float _changeTargetTimer;
+    private float _cantMakePathStartTime = -1;
     private List<Transform> _playerTransforms;
     private Transform _closestPlayer;
+    private AI_SquadRole _role;
 
     private void Start()
     {
@@ -57,7 +65,19 @@ public class AIBehaviours : MonoBehaviour
         _playerTransforms = PlayerManager.Instance.Players.Select(p => p.Controller.transform).ToList();
         _path = new NavMeshPath();
         _changeTargetTimer = CHANGE_TARGET_TIME;
+        StartCoroutine(C_CheckRoleChange());
     }
+
+    private void OnEnable()
+    {
+        OnRoleChanged += ResetValues;
+    }
+
+    private void OnDisable()
+    {
+        OnRoleChanged -= ResetValues;
+    }
+
     private void Update()
     {
         if (_pathTimer <= 0)
@@ -91,10 +111,26 @@ public class AIBehaviours : MonoBehaviour
         _closestPlayer = _playerTransforms.OrderBy(p => Vector3.Distance(transform.position, p.transform.position)).FirstOrDefault();
     }
 
+    private IEnumerator C_CheckRoleChange()
+    {
+        while (true)
+        {
+            AI_SquadRole prevRole = _role;
+            yield return new WaitUntil(() => prevRole != _role);
+            OnRoleChanged?.Invoke();
+        }
+    }
+
+    private void ResetValues()
+    {
+        _movePercent = 1.0f;
+    }
+
     public AI_Decision MakeDecision(AI_SquadRole role, int aiDifficulty)
     {
         if (Enemy.Target == null) return new AI_Decision { action = AI_Action.IDLE };
 
+        _role = role;
         //**
         //**    Try for an attack
         //**
@@ -175,7 +211,7 @@ public class AIBehaviours : MonoBehaviour
             {
                 moveDir = new(_path.corners[1].x - transform.position.x, _path.corners[1].z - transform.position.z);
             }
-            return new AI_Decision { action = AI_Action.MOVE, data = moveDir.normalized };
+            return new AI_Decision { action = AI_Action.MOVE, data = moveDir.normalized, modifier = _movePercent };
         }
         return new AI_Decision { action = AI_Action.IDLE };
     }
@@ -223,6 +259,10 @@ public class AIBehaviours : MonoBehaviour
                 {
                     // Got bored, go crazy mode on the player
                     StartCoroutine(C_ForceOffenseForTime(COVER_EXIT_TIMEOUT_OVERRIDE_TIME));
+                    if (Random.Range(0f, 100f) <= COVER_EXIT_PRESSURE_CHANCE)
+                    {
+                        _movePercent = 0.50f;   // Apply a 50% speed modifier
+                    }
                 }
                 else
                 {
@@ -252,11 +292,13 @@ public class AIBehaviours : MonoBehaviour
             {
                 moveDir = new(_path.corners[1].x - transform.position.x, _path.corners[1].z - transform.position.z);
             }
-            return new AI_Decision { action = AI_Action.MOVE, data = moveDir.normalized };
+            _movePercent = 1.0f;
+            return new AI_Decision { action = AI_Action.MOVE, data = moveDir.normalized, modifier = _movePercent };
         }
         return new AI_Decision { action = AI_Action.IDLE };
     }
     #endregion
+
     #region Cover Exit Far State
     private AI_Decision DecideCoverExitFar()
     {
@@ -319,7 +361,7 @@ public class AIBehaviours : MonoBehaviour
             {
                 moveDir = new(_path.corners[1].x - transform.position.x, _path.corners[1].z - transform.position.z);
             }
-            return new AI_Decision { action = AI_Action.MOVE, data = moveDir.normalized };
+            return new AI_Decision { action = AI_Action.MOVE, data = moveDir.normalized, modifier = _movePercent };
         }
         return new AI_Decision { action = AI_Action.IDLE };
     }
@@ -327,6 +369,7 @@ public class AIBehaviours : MonoBehaviour
 
     private void RecalculatePath()
     {
+        NavMeshPath oldPath = _path;
         NavMesh.CalculatePath(transform.position, (!_favourAltPath ? _targetPos : _targetPosAlt), NavMesh.AllAreas, _path);
         if (_path.corners.Length == 0)
         {
@@ -336,8 +379,23 @@ public class AIBehaviours : MonoBehaviour
 
         if (_path.corners.Length == 0)
         {
-            Debug.LogWarning($"Enemy {name} Could not find valid path to target");
-            return;
+            if (_cantMakePathStartTime == -1)
+            {
+                _cantMakePathStartTime = Time.time;
+            }
+            else if (Time.time > _cantMakePathStartTime + 3.0f)
+            {
+                // Has failed to make a path for three seconds. Throw an error that something's gone wrong.
+                DeveloperConsole.Log($"Error: Enemy {name} cannot find path to target!");
+                return;
+            }
+            // Just use the old path for now. If this persists, an error will be read
+            _path = oldPath;
+        }
+        else
+        {
+            // A valid path has been made, reset the timer.
+            _cantMakePathStartTime = -1;
         }
         // If the chosen path's last point intersects with another enemy, then try to adjust it to avoid stacking.
 
@@ -406,5 +464,6 @@ public struct AI_Decision
 {
     public AI_Action action;
     public Vector2 data;
+    public float modifier;
     public AI_Action_Override actionOverride;
 }

@@ -38,6 +38,12 @@ public class EnemyController : Character
     [SerializeField] private AttackCombo comboDoubleHeavy;
     private List<AttackCombo> combos;
 
+    [Header("Audio")]
+    [SerializeField] protected AudioClip[] sfxLightSwish;
+    [SerializeField] protected AudioClip[] sfxLightHit;
+    [SerializeField] protected AudioClip[] sfxHeavySwish;
+    [SerializeField] protected AudioClip[] sfxHeavyHit;
+
 
     // Vars for AI (Ignored when PlayerController inhereits this)
     [NonSerialized] public Character Target;
@@ -162,7 +168,7 @@ public class EnemyController : Character
 
                 case AI_Action.MOVE:
                     _movementInput = decision.data;
-                    if (TargetSpeed == 0) TargetSpeed = DefaultSpeed;
+                    if (TargetSpeed == 0) TargetSpeed = DefaultSpeed * decision.modifier;
                     break;
             }
 
@@ -371,9 +377,11 @@ public class EnemyController : Character
      */
     public void LightAttackHitFrame()
     {
+        SoundManager.Instance.PlaySound(sfxLightSwish, 1, true);
         List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(forwardXPoint.position, transform.right * transform.localScale.x, lightAttackDistance);
         foreach (var c in hits)
         {
+            SoundManager.Instance.PlaySound(sfxLightHit, 1, true);
             bool killedPlayer = c.Key.Character.Damage(lightAttackDamage, c.Value);
             if (!c.Key.Character.Grounded || _attacksAlwaysKnockback)
             {
@@ -393,9 +401,11 @@ public class EnemyController : Character
     */
     public void HeavyAttackHitFrame()
     {
+        SoundManager.Instance.PlaySound(sfxHeavySwish, 1, true);
         List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(forwardXPoint.position, transform.right * transform.localScale.x, heavyAttackDistance);
         foreach (var c in hits)
         {
+            SoundManager.Instance.PlaySound(sfxHeavyHit, 1, true);
             c.Key.Character.Damage(heavyAttackDamage, c.Value);
             if (!c.Key.Character.Grounded || _attacksAlwaysKnockback)
             {

@@ -765,6 +765,9 @@ MonoBehaviour:
   psManager: {fileID: 0}
   sprStatusReady: {fileID: -59170025, guid: b6e8dd947b379e447992891e92a0ce22, type: 3}
   sprStatusNotReady: {fileID: -257681254, guid: b6e8dd947b379e447992891e92a0ce22, type: 3}
+  sfxConnect: {fileID: 8300000, guid: 2922fc419034b504e82eac1b76624d41, type: 3}
+  sfxSelect: {fileID: 8300000, guid: 769f72402de8e354bbdbff57d5e5cf0f, type: 3}
+  sfxNavigate: {fileID: 8300000, guid: 6ecaa26900de35a4a8753ef4a31d72bb, type: 3}
 --- !u!1 &6484587835705603166
 GameObject:
   m_ObjectHideFlags: 0

@@ -33,6 +33,9 @@ public class PlayerClassRogue: PlayerController
     [Header("Dash Special - Movement Stats")]
     [SerializeField] private float dashSpecialSpeed = 6.0f;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip sfxSpinSwish;
+
     [Header("Particles")]
     [SerializeField] private ParticleObject particleSlashPrefab;
 
@@ -75,6 +78,8 @@ public class PlayerClassRogue: PlayerController
         model.Animator.SetTrigger(_animSpecialTwirl_T);
         _doMagicRegen = false;
 
+        AudioSource spinAudioSrc = SoundManager.Instance.PlaySoundLooping(sfxSpinSwish, 0.7f);
+
         bool hitFramePassed = false;
         void HitFramePassed() { hitFramePassed = true; }
 
@@ -88,6 +93,9 @@ public class PlayerClassRogue: PlayerController
             model.AnimListener.OnSpecialHitFrame -= HitFramePassed;
             OnLoseControl -= PrematureFinish;
             OnActionFinished -= PrematureFinish;
+
+            //Stop Audio - Because we don't have access to the source in this function we stop the entire Audio Clip
+            SoundManager.Instance.StopSoundLooping(spinAudioSrc);
 
             // Reset Variables
             _doMagicRegen = true;
@@ -161,6 +169,8 @@ public class PlayerClassRogue: PlayerController
             yield return null;
         }
 
+        SoundManager.Instance.StopSoundLooping(spinAudioSrc);
+
         // Animation finished, move on
         model.AnimListener.OnEvent01 -= AnimFinished;
         model.AnimListener.OnSpecialHitFrame -= HitFramePassed;
@@ -183,6 +193,7 @@ public class PlayerClassRogue: PlayerController
         List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(forwardXPoint.position, direction, dashSpecialDistance);
         foreach (var c in hits)
         {
+            SoundManager.Instance.PlaySound(sfxLightHit, 1f, true);
             bool killedEnemy = c.Key.Character.Damage(specialDamage, c.Value);
             if (!c.Key.Character.Grounded || killedEnemy || _attacksAlwaysKnockback)
             {
@@ -285,6 +296,7 @@ public class PlayerClassRogue: PlayerController
         List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(forwardXPoint.position, transform.right * transform.localScale.x, specialDistance);
         foreach (var c in hits)
         {
+            SoundManager.Instance.PlaySound(sfxLightHit, 1f, true);
             bool killedEnemy = c.Key.Character.Damage(dashSpecialDamage, c.Value);
             if (!killedEnemy) c.Key.Character.AddStatusEffect(new StatusEffectDazed(dashSpecialDazedDuration));
             // Apply Status Effect

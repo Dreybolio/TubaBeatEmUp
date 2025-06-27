@@ -35,7 +35,8 @@ public abstract class Character : MonoBehaviour
     [SerializeField] protected ParticleSystem particleDustPuff;
 
     [Header("Audio")]
-    [SerializeField] private AudioClip sndHurt;
+    [SerializeField] private AudioClip[] sfxHurt;
+    [SerializeField] private AudioClip[] sfxHeal;
 
     [Header("Prefabs")]
     [SerializeField] protected ParticleNumber prefabParticleNum; 
@@ -104,7 +105,7 @@ public abstract class Character : MonoBehaviour
     public void OverrideJumpGravity(Action<bool, float> newJumpGrav)
     {
         // Call this with null to cancel
-        if (jumpGravityOverride != null) Debug.LogWarning("Warning: Overrided Jump Gravity without clearing the previous override");
+        if (jumpGravityOverride != null && newJumpGrav != null) Debug.LogWarning("Warning: Overrided Jump Gravity without clearing the previous override");
         jumpGravityOverride = newJumpGrav;
     }
     protected void JumpAndGravity(bool tryJump, float height)
@@ -166,7 +167,7 @@ public abstract class Character : MonoBehaviour
     public void OverrideMove(Action<Vector2> newMove)
     {
         // Call this with null to cancel
-        if (moveOverride != null) Debug.LogWarning("Warning: Overrided Move without clearing the previous override");
+        if (moveOverride != null && newMove != null) Debug.LogWarning("Warning: Overrided Move without clearing the previous override");
         moveOverride = newMove;
     }
     protected void Move(Vector2 moveInput, float targetSpeed, bool doLerping = true)
@@ -195,7 +196,7 @@ public abstract class Character : MonoBehaviour
         }
         //Animation
         // Return 0 - 1 on speed
-        model.Animator.SetFloat(_animSpeed_F, Speed.magnitude / walkSpeed);
+        model.Animator.SetFloat(_animSpeed_F, Speed.magnitude / DefaultSpeed);
         model.Animator.SetFloat(_animVertSpeed_F, _verticalVelocity);
     }
 
@@ -234,7 +235,7 @@ public abstract class Character : MonoBehaviour
     public void OverrideApplyVelocity(Action newApplyVelocity)
     {
         // Call this with null to cancel
-        if (applyVelocityOverride != null) Debug.LogWarning("Warning: Overrided Apply Velocity without clearing the previous override");
+        if (applyVelocityOverride != null && newApplyVelocity != null) Debug.LogWarning("Warning: Overrided Apply Velocity without clearing the previous override");
         applyVelocityOverride = newApplyVelocity;
     }
     protected void ApplyVelocity()
@@ -288,7 +289,7 @@ public abstract class Character : MonoBehaviour
         // Spawn a particle
         ParticleNumber particle = Instantiate(prefabParticleNum, (Vector3)(hitPt != null ? hitPt : transform.position), Quaternion.identity);
         particle.SetText(amount.ToString());
-        SoundManager.Instance.PlaySound(sndHurt, 0.7f, true);
+        SoundManager.Instance.PlaySound(sfxHurt, 0.7f, true);
         OnHurt?.Invoke(amount);
         if (Health <= 0)
         {
@@ -310,7 +311,7 @@ public abstract class Character : MonoBehaviour
         // Spawn a particle
         ParticleNumber particle = Instantiate(prefabParticleNum, transform.position, Quaternion.identity);
         particle.SetText(amount.ToString());
-        SoundManager.Instance.PlaySound(sndHurt, 0.7f, true);
+        SoundManager.Instance.PlaySound(sfxHeal, 0.7f, true);
         OnHeal?.Invoke(amount);
 
         if (revived)

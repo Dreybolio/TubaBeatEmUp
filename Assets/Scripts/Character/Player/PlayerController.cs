@@ -39,7 +39,10 @@ public abstract class PlayerController : Character
     [SerializeField] private float magicRegenRate = 1.0f;
 
     [Header("Audio")]
-    [SerializeField] private AudioClip sndSpecial;
+    [SerializeField] protected AudioClip[] sfxLightSwish;
+    [SerializeField] protected AudioClip[] sfxLightHit;
+    [SerializeField] protected AudioClip[] sfxHeavySwish;
+    [SerializeField] protected AudioClip[] sfxHeavyHit;
 
     [Header("Prefabs")]
     [SerializeField] private RevivePlayer reviveMinigame;
@@ -470,9 +473,11 @@ public abstract class PlayerController : Character
      */
     public void LightAttackHitFrame()
     {
+        SoundManager.Instance.PlaySound(sfxLightSwish, 1, true);
         List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(forwardXPoint.position, transform.right * transform.localScale.x, lightAttackDistance);
         foreach (var c in hits)
         {
+            SoundManager.Instance.PlaySound(sfxLightHit, 1, true);
             bool killedEnemy = c.Key.Character.Damage(CalculateDamage(lightAttackDamage), c.Value);
             if (!c.Key.Character.Grounded || killedEnemy || _attacksAlwaysKnockback)
             {
@@ -492,6 +497,7 @@ public abstract class PlayerController : Character
     */
     public void HeavyAttackHitFrame()
     {
+        SoundManager.Instance.PlaySound(sfxHeavySwish, 1, true);
         List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(forwardXPoint.position, transform.right * transform.localScale.x, heavyAttackDistance);
         bool didDoubleHeavy = false;
         if (_actionHistory.Count > 0 && _actionHistory[^1] == ActionType.ATTACK_HEAVY)
@@ -502,6 +508,7 @@ public abstract class PlayerController : Character
         }
         foreach (var c in hits)
         {
+            SoundManager.Instance.PlaySound(sfxHeavyHit, 1, true);
             bool killedEnemy = c.Key.Character.Damage(CalculateDamage(heavyAttackDamage), c.Value);
             if (!c.Key.Character.Grounded)
             {

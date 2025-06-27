@@ -24,6 +24,11 @@ public class PlayerSelector : MonoBehaviour
     [SerializeField] private Sprite sprStatusReady;
     [SerializeField] private Sprite sprStatusNotReady;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip sfxConnect;
+    [SerializeField] private AudioClip sfxSelect;
+    [SerializeField] private AudioClip sfxNavigate;
+
     private Coroutine flickerTextRoutine;
     public Player Player { get; private set; }
     public CharacterData CurrentSelected { get; private set; }
@@ -66,6 +71,9 @@ public class PlayerSelector : MonoBehaviour
         // Navigation and Confirming enabled
         Player.OnUINavigate += OnNavigate;
         Player.OnUIConfirm += OnConfirm;
+
+        // Play Sound
+        SoundManager.Instance.PlaySound(sfxConnect, 0.8f);
     }
 
     public void AwaitConnection()
@@ -91,11 +99,13 @@ public class PlayerSelector : MonoBehaviour
         if (vec.x > 0.5f)
         {
             CharacterData next = psManager.GetNextCharacter(CurrentSelected);
+            SoundManager.Instance.PlaySound(sfxNavigate, 0.8f);
             SetAsSelected(next);
         }
         else if (vec.x < 0.5f)
         {
             CharacterData prev = psManager.GetPreviousCharacter(CurrentSelected);
+            SoundManager.Instance.PlaySound(sfxNavigate, 0.8f);
             SetAsSelected(prev);
         }
     }
@@ -128,6 +138,8 @@ public class PlayerSelector : MonoBehaviour
         Player.OnUINavigate -= OnNavigate;
         Player.OnUIConfirm -= OnConfirm;
         Player.OnUICancel += OnCancel;
+
+        SoundManager.Instance.PlaySound(sfxSelect, 0.8f);
 
         OnStatusChanged?.Invoke(this, true);
     }
