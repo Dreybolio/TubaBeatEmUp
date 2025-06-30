@@ -148,10 +148,10 @@ MonoBehaviour:
   sfxHurt: []
   sfxHeal: []
   prefabParticleNum: {fileID: 2259858965108060043, guid: 703459fde76a612409d98f019bd462d7, type: 3}
-  lightAttackDistance: 1
+  lightAttackDistance: 1.5
   lightAttackDamage: 2
   lightAttackAirborneKnockbackForce: 0.4
-  heavyAttackDistance: 1
+  heavyAttackDistance: 1.5
   heavyAttackDamage: 3
   heavyAttackKnockbackForce: 0.8
   heavyAttackAirborneKnockbackForce: 1.2
@@ -209,6 +209,8 @@ MonoBehaviour:
   dashSpecialDistance: 2
   dashSpecialDamage: 3
   dashSpecialKnockbackForce: 3
+  sfxRise: {fileID: 8300000, guid: c9dc1910a96007048850bfc82ca3505e, type: 3}
+  sfxSlam: {fileID: 8300000, guid: 98ee1361bc457dd4c92b8b769cc8f5a0, type: 3}
   particleCircleSlashPrefab: {fileID: 6837936505167167141, guid: e2c2b8864cda0b54e89d709e8ff77c2b, type: 3}
 --- !u!1001 &6272688328079912519
 PrefabInstance:

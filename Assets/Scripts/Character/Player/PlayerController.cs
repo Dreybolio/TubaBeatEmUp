@@ -8,35 +8,44 @@ public abstract class PlayerController : Character
 {
     [Header("PlayerController")]
     [Header("Actions - Light")]
-    [SerializeField] private float lightAttackDistance = 1.0f;
-    [SerializeField] private int lightAttackDamage = 2;
+    [SerializeField] private float lightAttackDistance = 1.5f;
+    [SerializeField] private int lightAttackDamageBase = 2;
     [SerializeField] private float lightAttackAirborneKnockbackForce = 0.4f;
+    public int LightAttackDamage { get; private set; }
 
     [Header("Actions - Heavy")]
-    [SerializeField] private float heavyAttackDistance = 1.0f;
-    [SerializeField] private int heavyAttackDamage = 3;
+    [SerializeField] private float heavyAttackDistance = 1.5f;
+    [SerializeField] private int heavyAttackDamageBase = 3;
     [SerializeField] private float heavyAttackKnockbackForce = 0.8f;
     [SerializeField] private float heavyAttackAirborneKnockbackForce = 1.2f;
+    public int HeavyAttackDamage { get; private set; }
 
     [Header("Actions - Dash")]
-    [SerializeField] private float dashMagicCost = 30f;
-    [SerializeField] private float dashMagicRegenCooldown = 0.75f;
+    [SerializeField] private float dashStaminaCost = 30f;
+    [SerializeField] private float dashStaminaRegenCooldown = 0.75f;
     [SerializeField] protected float dashSpeed = 5.0f;
     [SerializeField] private float dashLength = 0.30f;
     [SerializeField] private float dashCooldown = 0.15f;
     [SerializeField] private float dashJumpHeight = 1.65f;
 
     [Header("Actions - Drill")]
-    [SerializeField] private float drillMagicCost = 55f;
-    [SerializeField] private float drillMagicRegenCooldown = 0.75f;
+    [SerializeField] private float drillStaminaCost = 55f;
+    [SerializeField] private float drillStaminaRegenCooldown = 0.75f;
     // Note: Drill uses same damage stat as Heavy Attack
 
     [Header("Actions - Spin")]
     [SerializeField] private float spinDamageMult = 1.5f;
 
-    [Header("Magic Stats")]
-    public float MaxMagic;
-    [SerializeField] private float magicRegenRate = 1.0f;
+    [Header("Stamina Stats")]
+    public int MaxStamina { get; private set; }
+    public float StaminaRegenRate { get; private set; }
+    public float StaminaRegenTimeReduction { get; private set; }
+    public float Stamina { get; private set; }
+    protected bool _doStaminaRegen = true;
+
+    [SerializeField] private float baseMaxStamina = 100f;
+    [SerializeField] private float baseStaminaRegenRate = 10.0f;
+    [SerializeField] private float baseStaminaRegenTimeReduction = 1.0f;
 
     [Header("Audio")]
     [SerializeField] protected AudioClip[] sfxLightSwish;
@@ -51,19 +60,17 @@ public abstract class PlayerController : Character
     [NonSerialized] public Player Player;
 
     // Events
-    public event CharacterEventVal<float> OnMagicChanged;
-    public event CharacterEvent OnUseMagic;
+    public event CharacterEventVal<float> OnStaminaChanged;
+    public event CharacterEvent OnUseStamina;
     protected event CharacterEvent OnActionFinished;
 
     // Public Vars
-    public float Magic { get; private set; }
-    protected bool _doMagicRegen = true;
 
     // Vars
     private ActionType _currAction;
     private ActionType _actionBuffer;
     private float _dashCooldown = 0f;
-    private float _magicRegenCooldown = 0f;
+    private float _staminaRegenCooldown = 0f;
     protected bool _attacksAlwaysKnockback = false;
     private bool _actionAnimFinished = false;
     private bool _dashing = false;
@@ -75,8 +82,10 @@ public abstract class PlayerController : Character
 
     protected void ControllerInit()
     {
-        Magic = MaxMagic;
+        CalculateLevelledStats();
         TargetSpeed = walkSpeed;
+
+        // Assign Other Values
         AssignExtraAnimationIDs();
         GameUI.Instance.AddPlayerUI(this);
         CharacterInit();
@@ -130,15 +139,15 @@ public abstract class PlayerController : Character
         ApplyVelocity();
 
         // Player-Specific Cooldowns
-        if (_doMagicRegen)
+        if (_doStaminaRegen)
         {
-            if (_magicRegenCooldown > 0)
+            if (_staminaRegenCooldown > 0)
             {
-                _magicRegenCooldown -= Time.deltaTime;
+                _staminaRegenCooldown -= Time.deltaTime;
             }
             else
             {
-                RegenMagic();
+                RegenStamina();
             }
         }
 
@@ -255,7 +264,7 @@ public abstract class PlayerController : Character
 
     public void Dash()
     {
-        if (SpendMagicOnAction(dashMagicCost))
+        if (SpendStaminaOnAction(dashStaminaCost))
         {
             StartCoroutine(C_Dash());
         }
@@ -275,7 +284,7 @@ public abstract class PlayerController : Character
 
         model.Animator.SetInteger(_animActionID_I, (int)ActionType.DASH);
         // Disable normal movement and manually set speed
-        _doMagicRegen = false;
+        _doStaminaRegen = false;
         _hasMovement = false;
         _canBeHit = false;
         Speed = _facingRight ? new(dashSpeed, 0) : new(-dashSpeed, 0);
@@ -302,8 +311,8 @@ public abstract class PlayerController : Character
                     Player.OnPlayerAction += DoAction;
                     Player.OnPlayerAction -= OverrideAction;
                 }
-                _doMagicRegen = true;
-                PauseMagicRegenForTime(dashMagicRegenCooldown);
+                _doStaminaRegen = true;
+                PauseStaminaRegenForTime(dashStaminaRegenCooldown);
                 model.Animator.SetInteger(_animActionID_I, (int)ActionType.NONE);
                 model.Animator.SetTrigger(_animCancelAction_T);
                 StartCoroutine(C_DashJump());
@@ -319,16 +328,16 @@ public abstract class PlayerController : Character
                     Player.OnPlayerAction += DoAction;
                     Player.OnPlayerAction -= OverrideAction;
                 }
-                _doMagicRegen = true;
+                _doStaminaRegen = true;
                 _dashing = false;
-                PauseMagicRegenForTime(dashMagicRegenCooldown);
+                PauseStaminaRegenForTime(dashStaminaRegenCooldown);
                 SpinAttack();
                 yield break;
             }
             else if (actionOverride == ActionType.ATTACK_HEAVY)
             {
                 // Note: Normal cost function happens in Drill function, but need to check here to make sure the dash should indeed be ended.
-                if (Magic < drillMagicCost)
+                if (Stamina < drillStaminaCost)
                 {
                     // No magic for override
                     actionOverride = ActionType.NONE;
@@ -382,8 +391,8 @@ public abstract class PlayerController : Character
         _dashing = false;
         _hasMovement = true;
         _canBeHit = true;
-        _doMagicRegen = true;
-        PauseMagicRegenForTime(dashMagicRegenCooldown);
+        _doStaminaRegen = true;
+        PauseStaminaRegenForTime(dashStaminaRegenCooldown);
 
         ActionAnimFinished();
     }
@@ -428,7 +437,7 @@ public abstract class PlayerController : Character
     #region Drill Attack
     public void Drill()
     {
-        if (SpendMagicOnAction(drillMagicCost))
+        if (SpendStaminaOnAction(drillStaminaCost))
         {
             // Because this action is not triggered normally, action type must be set here
             _currAction = ActionType.ATTACK_DRILL;
@@ -438,7 +447,7 @@ public abstract class PlayerController : Character
             // Stop movement during a heavy attack
             _hasMovement = false;
             _canBeHit = false;
-            _doMagicRegen = false;
+            _doStaminaRegen = false;
             // Do dash speeds as this happens
             Speed = _facingRight ? new(dashSpeed, 0) : new(-dashSpeed, 0);
             // Revert variables when done
@@ -457,9 +466,9 @@ public abstract class PlayerController : Character
         // Revert Variables
         _hasMovement = true;
         _canBeHit = true;
-        _doMagicRegen = true;
+        _doStaminaRegen = true;
         _attacksAlwaysKnockback = false;
-        PauseMagicRegenForTime(drillMagicRegenCooldown);
+        PauseStaminaRegenForTime(drillStaminaRegenCooldown);
     }
     #endregion
 
@@ -474,11 +483,11 @@ public abstract class PlayerController : Character
     public void LightAttackHitFrame()
     {
         SoundManager.Instance.PlaySound(sfxLightSwish, 1, true);
-        List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(forwardXPoint.position, transform.right * transform.localScale.x, lightAttackDistance);
+        List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(centerPoint.position, transform.right * transform.localScale.x, lightAttackDistance);
         foreach (var c in hits)
         {
             SoundManager.Instance.PlaySound(sfxLightHit, 1, true);
-            bool killedEnemy = c.Key.Character.Damage(CalculateDamage(lightAttackDamage), c.Value);
+            bool killedEnemy = c.Key.Character.Damage(CalculateDamage(LightAttackDamage), c.Value);
             if (!c.Key.Character.Grounded || killedEnemy || _attacksAlwaysKnockback)
             {
                 c.Key.Character.Knockback(_facingRight, lightAttackAirborneKnockbackForce);
@@ -498,7 +507,7 @@ public abstract class PlayerController : Character
     public void HeavyAttackHitFrame()
     {
         SoundManager.Instance.PlaySound(sfxHeavySwish, 1, true);
-        List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(forwardXPoint.position, transform.right * transform.localScale.x, heavyAttackDistance);
+        List<KeyValuePair<CharacterHitbox, Vector3>> hits = ForwardAttackHitboxCollisions(centerPoint.position, transform.right * transform.localScale.x, heavyAttackDistance);
         bool didDoubleHeavy = false;
         if (_actionHistory.Count > 0 && _actionHistory[^1] == ActionType.ATTACK_HEAVY)
         {
@@ -509,7 +518,7 @@ public abstract class PlayerController : Character
         foreach (var c in hits)
         {
             SoundManager.Instance.PlaySound(sfxHeavyHit, 1, true);
-            bool killedEnemy = c.Key.Character.Damage(CalculateDamage(heavyAttackDamage), c.Value);
+            bool killedEnemy = c.Key.Character.Damage(CalculateDamage(HeavyAttackDamage), c.Value);
             if (!c.Key.Character.Grounded)
             {
                 c.Key.Character.Knockback(_facingRight, heavyAttackAirborneKnockbackForce * (didDoubleHeavy ? 1 : -1)); // Single Heavy knocks downwards
@@ -534,9 +543,9 @@ public abstract class PlayerController : Character
         OnActionFinished?.Invoke();
     }
 
-    protected bool SpendMagicOnAction(float cost)
+    protected bool SpendStaminaOnAction(float cost)
     {
-        if (Magic < cost)
+        if (Stamina < cost)
         {
             // Can't do this, not enough magic
             model.Animator.SetInteger(_animActionID_I, (int)ActionType.NONE);
@@ -544,22 +553,24 @@ public abstract class PlayerController : Character
         }
         else
         {
-            Magic -= cost;
-            OnMagicChanged?.Invoke(Magic);
+            Stamina -= cost;
+            OnStaminaChanged?.Invoke(Stamina);
             return true;
         }
     }
 
-    public void PauseMagicRegenForTime(float time)
+    public void PauseStaminaRegenForTime(float time)
     {
-        _magicRegenCooldown = Mathf.Max(_magicRegenCooldown, time);
+        // Note: StamiaRegenTimeReduction is a Percentage (0.0 - 1.0) that decreases as you level up.
+        // This time is dynamically reduced, therefore.
+        _staminaRegenCooldown = Mathf.Max(_staminaRegenCooldown, time * StaminaRegenTimeReduction);
     }
 
-    private void RegenMagic()
+    private void RegenStamina()
     {
-        Magic += magicRegenRate + Time.deltaTime;
-        if (Magic > MaxMagic) Magic = MaxMagic;
-        OnMagicChanged?.Invoke(Magic);
+        Stamina += StaminaRegenRate / 10f + Time.deltaTime;
+        if (Stamina > MaxStamina) Stamina = MaxStamina;
+        OnStaminaChanged?.Invoke(Stamina);
     }
 
     private void PlayerDeath()
@@ -601,7 +612,28 @@ public abstract class PlayerController : Character
         RevivePlayer minigame = Instantiate(reviveMinigame, transform);
         minigame.ReviveTarget = Player;
     }
-    
+
+    protected abstract void CalculateLevelledClassStats();
+    public void CalculateLevelledStats()
+    {
+        // Base: 2, Added Per Level: ~ 1.1
+        LightAttackDamage = Mathf.FloorToInt(lightAttackDamageBase + Player.Level / 10 + Player.AttackLevel);
+        // Base: 3, Added Per Level: ~ 1.265
+        HeavyAttackDamage = Mathf.FloorToInt(heavyAttackDamageBase + Player.Level / 10 + Player.AttackLevel * 1.15f);
+        // Base: 30, Added Per Level: ~ 11
+        MaxHealth = Mathf.FloorToInt(maxHealthBase + Player.Level + Player.DefenseLevel * 10f);
+        // Base: 100, Added Per Level: ~ 20.2
+        MaxStamina = Mathf.FloorToInt(baseMaxStamina + Player.Level / 5 + Player.StaminaLevel * 20f);
+        // Base: 100, Added Per Level: ~ 12.3
+        StaminaRegenRate = Mathf.Round((baseStaminaRegenRate + Player.Level / 3 + Player.StaminaLevel * 12f) * 100f) / 100f;
+        // Base: 100%, Reduced Per Level: ~5%
+        StaminaRegenTimeReduction = Mathf.Round((baseStaminaRegenTimeReduction - Player.StaminaLevel * 0.05f) * 100f) / 100f;
+
+        // Ensure that specific class attributes also get recalculated
+        CalculateLevelledClassStats();
+    }
+
+
     public void AssignExtraAnimationIDs()
     {
         _animActionID_I = Animator.StringToHash("ActionID");

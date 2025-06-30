@@ -21,7 +21,7 @@ public class Coin : Item
         PlayerController controller = player.GetComponent<PlayerController>();
         if (controller != null)
         {
-            controller.Player.ChangeCoinAmount(1);
+            controller.Player.AddCoins(1);
             Destroy(gameObject);
         }
     

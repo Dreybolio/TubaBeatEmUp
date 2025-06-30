@@ -66,6 +66,7 @@ public class EnemyController : Character
     private int _animActionID_I, _animCancelAction_T;
     void Start()
     {
+        MaxHealth = maxHealthBase;
         AttackCombo[] comboArr = { comboDoubleLight, comboTripleLight, comboDoubleHeavy, comboSpin };
         combos = comboArr.Where(c => c.enabled).ToList();
         AssignExtraAnimationIDs();

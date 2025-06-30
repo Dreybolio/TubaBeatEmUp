@@ -190,10 +190,10 @@ MonoBehaviour:
   sfxHurt: []
   sfxHeal: []
   prefabParticleNum: {fileID: 2259858965108060043, guid: 703459fde76a612409d98f019bd462d7, type: 3}
-  lightAttackDistance: 1
+  lightAttackDistance: 1.5
   lightAttackDamage: 2
   lightAttackAirborneKnockbackForce: 0.4
-  heavyAttackDistance: 1
+  heavyAttackDistance: 1.5
   heavyAttackDamage: 3
   heavyAttackKnockbackForce: 0.8
   heavyAttackAirborneKnockbackForce: 1.2

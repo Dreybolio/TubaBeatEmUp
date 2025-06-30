@@ -16,7 +16,9 @@ public abstract class Character : MonoBehaviour
     [SerializeField] protected float gravityScale = -20.0f;
 
     [Header("Game Stats")]
-    public int MaxHealth = 30;
+    [SerializeField] protected int maxHealthBase = 30;
+    public int MaxHealth { get; protected set; }
+    public int Health { get; protected set; }
 
     [Header("Ground Detection")]
     [SerializeField] protected Transform groundCheckPos;
@@ -59,7 +61,6 @@ public abstract class Character : MonoBehaviour
 
     // Public Vars
     public bool Grounded { get; protected set; }
-    public int Health { get; protected set; }
     [NonSerialized] public float TargetSpeed;
     [NonSerialized] public bool HasControl = true;
     [NonSerialized] public Vector2 Speed;
@@ -408,7 +409,7 @@ public abstract class Character : MonoBehaviour
 
     public void HurtStun()
     {
-        if (_stunImmunity) return;
+        if (!_canBeHit || _stunImmunity) return;
         if (Health <= 0) return; // Don't stun if dead
         if (_hurtStunRoutine != null)
             StopCoroutine(_hurtStunRoutine);

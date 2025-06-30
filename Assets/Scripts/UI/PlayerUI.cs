@@ -20,7 +20,7 @@ public class PlayerUI : MonoBehaviour
         {
             _player.OnHurt -= HealthChange;
             _player.OnHeal -= HealthChange;
-            _player.OnMagicChanged -= MagicChange;
+            _player.OnStaminaChanged -= MagicChange;
         }
     }
     public void SetHealth(float percent)
@@ -37,7 +37,7 @@ public class PlayerUI : MonoBehaviour
         playerIcon.sprite = player.Player.CharacterData.icon;
         player.OnHurt += HealthChange;
         player.OnHeal += HealthChange;
-        player.OnMagicChanged += MagicChange;
+        player.OnStaminaChanged += MagicChange;
         player.Player.OnCoinAmountChanged += CoinChange;
     }
 
@@ -48,7 +48,7 @@ public class PlayerUI : MonoBehaviour
 
     public void MagicChange(float _) 
     {
-        SetMagic(_player.Magic / _player.MaxMagic);
+        SetMagic(_player.Stamina / _player.MaxStamina);
     }
 
     public void CoinChange(int _)

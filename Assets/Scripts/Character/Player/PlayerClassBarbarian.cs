@@ -6,12 +6,14 @@ public class PlayerClassBarbarian : PlayerController
 {
     [Header("Barbarian")]
     [Header("Special - Attack Stats")]
-    [SerializeField] private float specialMagicCost = 60.0f;
-    [SerializeField] private float specialMagicRegenCooldown = 0.75f;
+    [SerializeField] private float specialStaminaCost = 60.0f;
+    [SerializeField] private float specialStaminaRegenCooldown = 0.75f;
     [SerializeField] private float specialDistance = 1.75f;
-    [SerializeField] private int specialDamage = 2;
+    [SerializeField] private int specialDamageBase = 2;
     [SerializeField] private float specialKnockbackForce = 1.1f;
     [SerializeField] private float specialAirborneKnockbackForce = 1.4f;
+    public int SpecialDamage { get; private set; }
+
     [Header("Special - Movement Stats")]
     [SerializeField] private float specialRiseHeight = 1.5f;
     [SerializeField] private float specialRiseTime = 0.50f;
@@ -23,11 +25,16 @@ public class PlayerClassBarbarian : PlayerController
     [SerializeField] private float specialCustomGravity = -10f;
 
     [Header("Dash Special - Attack Stats")]
-    [SerializeField] private float dashSpecialMagicCost = 60.0f;
-    [SerializeField] private float dashSpecialMagicRegenCooldown = 0.75f;
+    [SerializeField] private float dashSpecialStaminaCost = 60.0f;
+    [SerializeField] private float dashSpecialStaminaRegenCooldown = 0.75f;
     [SerializeField] private float dashSpecialDistance = 2.0f;
-    [SerializeField] private int dashSpecialDamage = 3;
+    [SerializeField] private int dashSpecialDamageBase = 3;
     [SerializeField] private float dashSpecialKnockbackForce = 3.0f;
+    public int DashSpecialDamage { get; private set; }
+
+    [Header("Audio")]
+    [SerializeField] private AudioClip sfxRise;
+    [SerializeField] private AudioClip sfxSlam;
 
     [Header("Particles")]
     [SerializeField] private ParticleObject particleCircleSlashPrefab;
@@ -47,7 +54,7 @@ public class PlayerClassBarbarian : PlayerController
     #region Special Attack
     public override void Special()
     {
-        if (SpendMagicOnAction(specialMagicCost))
+        if (SpendStaminaOnAction(specialStaminaCost))
         {
             StartCoroutine(C_Special());
         }
@@ -59,7 +66,7 @@ public class PlayerClassBarbarian : PlayerController
 
     public override bool CanAffordSpecial()
     {
-        return Magic >= specialMagicCost;
+        return Stamina >= specialStaminaCost;
     }
 
     private IEnumerator C_Special()
@@ -71,13 +78,14 @@ public class PlayerClassBarbarian : PlayerController
         OverrideJumpGravity(SpecialJumpGravity);
         OverrideMove(SpecialMove);
         OverrideApplyVelocity(SpecialApplyVelocity);
-        _doMagicRegen = false;
+        _doStaminaRegen = false;
         float timer = 0f;
         if (Grounded)
         {
             // Rise for .50s
             SpawnParticle(ParticleID.DUST_PUFF);
             _verticalVelocity = Mathf.Sqrt(specialRiseHeight * -2f * specialCustomGravity);
+            SoundManager.Instance.PlaySound(sfxRise, 0.5f, true);
             while (timer < specialRiseTime)
             {
                 // If in the first third of the rise, have extra acceleration
@@ -115,6 +123,7 @@ public class PlayerClassBarbarian : PlayerController
         while (!Grounded);
         // No longer grounded, move on
         // Do shockwave
+        SoundManager.Instance.PlaySound(sfxSlam, 0.5f, true);
         SpecialHitFrame();
         Vector3 particleSpawn = new(transform.position.x, transform.position.y + 0.1f, transform.position.z);
         Instantiate(particleCircleSlashPrefab, particleSpawn, Quaternion.identity);
@@ -129,8 +138,8 @@ public class PlayerClassBarbarian : PlayerController
         HasControl = true;
 
         // Set a magic regen cooldown
-        _doMagicRegen = true;
-        PauseMagicRegenForTime(specialMagicRegenCooldown);
+        _doStaminaRegen = true;
+        PauseStaminaRegenForTime(specialStaminaRegenCooldown);
 
         // Finish by indicating end of attack
 
@@ -147,7 +156,7 @@ public class PlayerClassBarbarian : PlayerController
         foreach (var c in hits)
         {
             SoundManager.Instance.PlaySound(sfxHeavyHit, 1f, true);
-            bool killedEnemy = c.Key.Character.Damage(specialDamage, c.Value);
+            bool killedEnemy = c.Key.Character.Damage(SpecialDamage, c.Value);
             bool knockRight = c.Key.transform.position.x > transform.position.x;
             if (!c.Key.Character.Grounded)
             {
@@ -202,7 +211,7 @@ public class PlayerClassBarbarian : PlayerController
     #region Dash Special Attack
     public override void DashSpecial()
     {
-        if (SpendMagicOnAction(dashSpecialMagicCost))
+        if (SpendStaminaOnAction(dashSpecialStaminaCost))
         {
             StartCoroutine(C_DashSpecial());
         }
@@ -214,7 +223,7 @@ public class PlayerClassBarbarian : PlayerController
 
     public override bool CanAffordDashSpecial()
     {
-        return Magic >= dashSpecialMagicCost;
+        return Stamina >= dashSpecialStaminaCost;
     }
 
     private IEnumerator C_DashSpecial()
@@ -224,7 +233,7 @@ public class PlayerClassBarbarian : PlayerController
         AnimatorOverrideSetEnabled(true);
         model.Animator.ResetTrigger(_animCancelAction_T);
         model.Animator.SetTrigger(_animSpecialBash_T);
-        _doMagicRegen = false;
+        _doStaminaRegen = false;
         _hasMovement = false;
         _canBeHit = false;
         // Do dash speeds as this happens
@@ -247,6 +256,7 @@ public class PlayerClassBarbarian : PlayerController
         Speed = Vector2.zero;
         Vector3 particleSpawn = forwardXPoint.position;
         Instantiate(particleCircleSlashPrefab, particleSpawn, Quaternion.identity);
+        SoundManager.Instance.PlaySound(sfxSlam, 0.5f, true);
         DashSpecialHitFrame();
 
         // Start recovery animation
@@ -257,10 +267,10 @@ public class PlayerClassBarbarian : PlayerController
         // Reset Variables
         model.Animator.ResetTrigger(_animSpecialBashRecovery_T);
         HasControl = true;
-        _doMagicRegen = true;
+        _doStaminaRegen = true;
         _hasMovement = true;
         _canBeHit = true;
-        PauseMagicRegenForTime(dashSpecialMagicRegenCooldown);
+        PauseStaminaRegenForTime(dashSpecialStaminaRegenCooldown);
         AnimatorOverrideSetEnabled(false);
         model.Animator.ResetTrigger(_animCancelAction_T);
         ActionAnimFinished();
@@ -272,7 +282,7 @@ public class PlayerClassBarbarian : PlayerController
         foreach (var c in hits)
         {
             SoundManager.Instance.PlaySound(sfxHeavyHit, 1f, true);
-            bool killedEnemy = c.Key.Character.Damage(dashSpecialDamage, c.Value);
+            bool killedEnemy = c.Key.Character.Damage(DashSpecialDamage, c.Value);
             bool knockRight = c.Key.transform.position.x > forwardXPoint.position.x;
             c.Key.Character.Knockback(knockRight, dashSpecialKnockbackForce);
 
@@ -281,6 +291,13 @@ public class PlayerClassBarbarian : PlayerController
     }
     #endregion
 
+    protected override void CalculateLevelledClassStats()
+    {
+        // Base: 2, Added Per Level: ~ 1.32
+        SpecialDamage = Mathf.FloorToInt(specialDamageBase + Player.Level / 10 + Player.AttackLevel * 1.20f);
+        // Base: 3, Added Per Level: ~1.43
+        DashSpecialDamage = Mathf.FloorToInt(dashSpecialDamageBase + Player.Level / 10 + Player.AttackLevel * 1.25f);
+    }
 
     private void AssignClassAnimationIDs()
     {

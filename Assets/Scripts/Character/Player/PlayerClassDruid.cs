@@ -38,7 +38,7 @@ public class PlayerClassDruid: PlayerController
     #region Special Attack
     public override void Special()
     {
-        if (SpendMagicOnAction(specialMagicCost))
+        if (SpendStaminaOnAction(specialMagicCost))
         {
             StartCoroutine(C_Special());
         }
@@ -50,7 +50,7 @@ public class PlayerClassDruid: PlayerController
 
     public override bool CanAffordSpecial()
     {
-        return Magic >= specialMagicCost;
+        return Stamina >= specialMagicCost;
     }
 
     private IEnumerator C_Special()
@@ -68,7 +68,7 @@ public class PlayerClassDruid: PlayerController
     #region Dash Special Attack
     public override void DashSpecial()
     {
-        if (SpendMagicOnAction(dashSpecialMagicCost))
+        if (SpendStaminaOnAction(dashSpecialMagicCost))
         {
             StartCoroutine(C_DashSpecial());
         }
@@ -90,14 +90,19 @@ public class PlayerClassDruid: PlayerController
 
     public override bool CanAffordDashSpecial()
     {
-        return Magic >= dashSpecialMagicCost;
+        return Stamina >= dashSpecialMagicCost;
     }
 
     #endregion
 
+    protected override void CalculateLevelledClassStats()
+    {
+        // TODO
+    }
 
     private void AssignClassAnimationIDs()
     {
 
     }
+
 }

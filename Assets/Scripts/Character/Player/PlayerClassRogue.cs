@@ -6,11 +6,12 @@ public class PlayerClassRogue: PlayerController
 {
     [Header("Rogue")]
     [Header("Special - Attack Stats")]
-    [SerializeField] private float specialMagicCost = 60.0f;
-    [SerializeField] private float specialMagicRegenCooldown = 0.75f;
+    [SerializeField] private float specialStaminaCost = 60.0f;
+    [SerializeField] private float specialStaminaRegenCooldown = 0.75f;
     [SerializeField] private float specialDistance = 1.75f;
-    [SerializeField] private int specialDamage = 2;
+    [SerializeField] private int specialDamageBase = 2;
     [SerializeField] private float specialAirborneKnockbackForce = 1.4f;
+    public int SpecialDamage { get; private set; }
 
     [Header("Special - Movement Stats")]
     [SerializeField] private float specialSpeedAtMin = 4.5f;
@@ -23,12 +24,14 @@ public class PlayerClassRogue: PlayerController
     [SerializeField] private Transform specialSpinRef;
 
     [Header("Dash Special - Attack Stats")]
-    [SerializeField] private float dashSpecialMagicCost = 60.0f;
-    [SerializeField] private float dashSpecialMagicRegenCooldown = 0.75f;
+    [SerializeField] private float dashSpecialStaminaCost = 60.0f;
+    [SerializeField] private float dashSpecialStaminaRegenCooldown = 0.75f;
     [SerializeField] private float dashSpecialDistance = 1.0f;
-    [SerializeField] private int dashSpecialDamage = 3;
+    [SerializeField] private int dashSpecialDamageBase = 3;
     [SerializeField] private float dashSpecialAirborneKnockbackForce = 1.4f;
-    [SerializeField] private float dashSpecialDazedDuration = 4f;
+    [SerializeField] private float dashSpecialDazedDurationBase = 4f;
+    public int DashSpecialDamage { get; private set; }
+    public float DashSpecialDazedDuration { get; private set; }
 
     [Header("Dash Special - Movement Stats")]
     [SerializeField] private float dashSpecialSpeed = 6.0f;
@@ -54,7 +57,7 @@ public class PlayerClassRogue: PlayerController
     #region Special Attack
     public override void Special()
     {
-        if (SpendMagicOnAction(specialMagicCost))
+        if (SpendStaminaOnAction(specialStaminaCost))
         {
             StartCoroutine(C_Special());
         }
@@ -66,7 +69,7 @@ public class PlayerClassRogue: PlayerController
 
     public override bool CanAffordSpecial()
     {
-        return Magic >= specialMagicCost;
+        return Stamina >= specialStaminaCost;
     }
 
     private IEnumerator C_Special()
@@ -76,7 +79,7 @@ public class PlayerClassRogue: PlayerController
         OverrideMove(SpecialMove);
         model.Animator.ResetTrigger(_animCancelAction_T);
         model.Animator.SetTrigger(_animSpecialTwirl_T);
-        _doMagicRegen = false;
+        _doStaminaRegen = false;
 
         AudioSource spinAudioSrc = SoundManager.Instance.PlaySoundLooping(sfxSpinSwish, 0.7f);
 
@@ -98,13 +101,13 @@ public class PlayerClassRogue: PlayerController
             SoundManager.Instance.StopSoundLooping(spinAudioSrc);
 
             // Reset Variables
-            _doMagicRegen = true;
+            _doStaminaRegen = true;
             _doFaceMoveDir = true;
             _allowJump = true;
             model.Animator.ResetTrigger(_animSpecialTwirl_T);
             model.Animator.SetTrigger(_animCancelAction_T);
             OverrideMove(null);
-            PauseMagicRegenForTime(specialMagicRegenCooldown);
+            PauseStaminaRegenForTime(specialStaminaRegenCooldown);
             AnimatorOverrideSetEnabled(false);
             ActionAnimFinished();
             prematureFinish = true;
@@ -178,13 +181,13 @@ public class PlayerClassRogue: PlayerController
         OnActionFinished -= PrematureFinish;
 
         // Reset Variables
-        _doMagicRegen = true;
+        _doStaminaRegen = true;
         _doFaceMoveDir = true;
         _allowJump = true;
         model.Animator.ResetTrigger(_animSpecialTwirl_T);
         model.Animator.SetTrigger(_animCancelAction_T);
         OverrideMove(null);
-        PauseMagicRegenForTime(specialMagicRegenCooldown);
+        PauseStaminaRegenForTime(specialStaminaRegenCooldown);
         AnimatorOverrideSetEnabled(false);
         ActionAnimFinished();
     }
@@ -194,7 +197,7 @@ public class PlayerClassRogue: PlayerController
         foreach (var c in hits)
         {
             SoundManager.Instance.PlaySound(sfxLightHit, 1f, true);
-            bool killedEnemy = c.Key.Character.Damage(specialDamage, c.Value);
+            bool killedEnemy = c.Key.Character.Damage(SpecialDamage, c.Value);
             if (!c.Key.Character.Grounded || killedEnemy || _attacksAlwaysKnockback)
             {
                 c.Key.Character.Knockback(_facingRight, specialAirborneKnockbackForce);
@@ -249,7 +252,7 @@ public class PlayerClassRogue: PlayerController
     #region Dash Special Attack
     public override void DashSpecial()
     {
-        if (SpendMagicOnAction(dashSpecialMagicCost))
+        if (SpendStaminaOnAction(dashSpecialStaminaCost))
         {
             model.AnimListener.OnDashSpecialHitFrame += DashSpecialHitFrame;
             // Because this action is not triggered normally, action type must be set here
@@ -259,7 +262,7 @@ public class PlayerClassRogue: PlayerController
             // Stop movement during a heavy attack
             _hasMovement = false;
             _canBeHit = false;
-            _doMagicRegen = false;
+            _doStaminaRegen = false;
             // Do dash speeds as this happens
             Speed = _facingRight ? new(dashSpecialSpeed, 0) : new(-dashSpecialSpeed, 0);
             // Revert variables when done
@@ -273,7 +276,7 @@ public class PlayerClassRogue: PlayerController
 
     public override bool CanAffordDashSpecial()
     {
-        return Magic >= dashSpecialMagicCost;
+        return Stamina >= dashSpecialStaminaCost;
     }
 
 
@@ -285,10 +288,10 @@ public class PlayerClassRogue: PlayerController
         // Revert Variables
         _hasMovement = true;
         _canBeHit = true;
-        _doMagicRegen = true;
+        _doStaminaRegen = true;
         model.Animator.ResetTrigger(_animSpecialSlide_T);
         AnimatorOverrideSetEnabled(false);
-        PauseMagicRegenForTime(dashSpecialMagicRegenCooldown);
+        PauseStaminaRegenForTime(dashSpecialStaminaRegenCooldown);
     }
 
     public void DashSpecialHitFrame()
@@ -297,8 +300,8 @@ public class PlayerClassRogue: PlayerController
         foreach (var c in hits)
         {
             SoundManager.Instance.PlaySound(sfxLightHit, 1f, true);
-            bool killedEnemy = c.Key.Character.Damage(dashSpecialDamage, c.Value);
-            if (!killedEnemy) c.Key.Character.AddStatusEffect(new StatusEffectDazed(dashSpecialDazedDuration));
+            bool killedEnemy = c.Key.Character.Damage(DashSpecialDamage, c.Value);
+            if (!killedEnemy) c.Key.Character.AddStatusEffect(new StatusEffectDazed(DashSpecialDazedDuration));
             // Apply Status Effect
             if (!c.Key.Character.Grounded || killedEnemy || _attacksAlwaysKnockback)
             {
@@ -314,6 +317,15 @@ public class PlayerClassRogue: PlayerController
     }
     #endregion
 
+    protected override void CalculateLevelledClassStats()
+    {
+        // Base: 2, Added Per Level: ~ 1.32
+        SpecialDamage = Mathf.FloorToInt(specialDamageBase + Player.Level / 10 + Player.AttackLevel * 1.20f);
+        // Base: 1, Added Per Level: ~1.1
+        DashSpecialDamage = Mathf.FloorToInt(dashSpecialDamageBase + Player.Level / 10 + Player.AttackLevel);
+        // Base: 4, Added Per Level: ~0.2
+        DashSpecialDazedDuration = Mathf.Round(dashSpecialDazedDurationBase + Player.AttackLevel * 0.2f);
+    }
 
     private void AssignClassAnimationIDs()
     {
